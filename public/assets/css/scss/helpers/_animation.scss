@@ -1,0 +1,91 @@
+/** @format */
+
+// ! Import Variables
+@use "../variables/colors" as *;
+@use "../variables/times" as *;
+
+@keyframes left-right {
+  0% {
+    transform: translateX(0px) rotate(180deg);
+    -webkit-transform: translateX(0px) rotate(180deg);
+    -moz-transform: translateX(0px) rotate(180deg);
+    -ms-transform: translateX(0px) rotate(180deg);
+    -o-transform: translateX(0px) rotate(180deg);
+  }
+  100% {
+    transform: translateX(-10px) rotate(180deg);
+    -webkit-transform: translateX(-10px) rotate(180deg);
+    -moz-transform: translateX(-10px) rotate(180deg);
+    -ms-transform: translateX(-10px) rotate(180deg);
+    -o-transform: translateX(-10px) rotate(180deg);
+  }
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0);
+    -webkit-transform: rotate(0);
+    -moz-transform: rotate(0);
+    -ms-transform: rotate(0);
+    -o-transform: rotate(0);
+  }
+  25% {
+    transform: rotate(15deg);
+    -webkit-transform: rotate(15deg);
+    -moz-transform: rotate(15deg);
+    -ms-transform: rotate(15deg);
+    -o-transform: rotate(15deg);
+  }
+  50% {
+    transform: rotate(0);
+    -webkit-transform: rotate(0);
+    -moz-transform: rotate(0);
+    -ms-transform: rotate(0);
+    -o-transform: rotate(0);
+  }
+  75% {
+    transform: rotate(-15deg);
+    -webkit-transform: rotate(-15deg);
+    -moz-transform: rotate(-15deg);
+    -ms-transform: rotate(-15deg);
+    -o-transform: rotate(-15deg);
+  }
+  100% {
+    transform: rotate(0);
+    -webkit-transform: rotate(0);
+    -moz-transform: rotate(0);
+    -ms-transform: rotate(0);
+    -o-transform: rotate(0);
+  }
+}
+
+@keyframes splash {
+  0% {
+    background-color: $blue-color;
+  }
+  100% {
+    background-color: white;
+  }
+}
+
+@keyframes pulse {
+  100% {
+    transform: scale(2.5);
+    -webkit-transform: scale(2.5);
+    -moz-transform: scale(2.5);
+    -ms-transform: scale(2.5);
+    -o-transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+@keyframes up-down {
+  0%,
+  100% {
+    bottom: 0px;
+  }
+
+  50% {
+    bottom: 30px;
+  }
+}

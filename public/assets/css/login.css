@@ -1,0 +1,197 @@
+body {
+	margin: 0;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.login-container {
+	min-height: 100vh;
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+}
+
+.login-container::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: linear-gradient(rgba(17, 24, 39, 0.6),
+			rgba(37, 99, 235, 0.4)),
+		url('../images/Background_login.webp');
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+	background-attachment: fixed;
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	-o-background-size: cover;
+	z-index: -1;
+	image-rendering: -webkit-optimize-contrast;
+	image-rendering: crisp-edges;
+}
+
+.glass-effect {
+	background: rgba(255, 255, 255, 0.1);
+	backdrop-filter: blur(10px);
+	border-radius: 16px;
+	padding: 2.5rem 2rem;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+	border: 2px solid rgba(255, 255, 255, 0.15);
+	width: 100%;
+	max-width: 400px;
+}
+
+.school-logo {
+	width: auto;
+	height: 180px;
+	margin: -20px auto 0.5rem;
+	display: block;
+	object-fit: contain;
+	background: rgba(255, 255, 255, 1);
+	padding: 12px;
+	border-radius: 10px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+	transition: transform 0.2s ease;
+}
+
+.school-logo:hover {
+	transform: scale(1.02);
+}
+
+.login-header {
+	text-align: center;
+	margin-bottom: 1.5rem;
+	color: #fff;
+}
+
+.login-header h2 {
+	font-size: 1.75rem;
+	font-weight: 600;
+	margin-bottom: 0.3rem;
+}
+
+.login-header p {
+	color: rgba(255, 255, 255, 0.9);
+	font-size: 0.9rem;
+}
+
+.form-group {
+	margin-bottom: 1rem;
+	position: relative;
+}
+
+.form-control {
+	background: rgba(255, 255, 255, 0.08);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	color: #fff;
+	padding: 0.7rem 1rem 0.7rem 2.5rem;
+	border-radius: 8px;
+	backdrop-filter: blur(4px);
+	transition: all 0.2s ease;
+	font-size: 0.95rem;
+}
+
+.form-control:focus {
+	background: rgba(255, 255, 255, 0.12);
+	border-color: rgba(255, 255, 255, 0.2);
+	box-shadow: none;
+}
+
+.form-control::placeholder {
+	color: rgba(255, 255, 255, 0.7);
+}
+
+.form-icon,
+.password-toggle {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	color: rgba(255, 255, 255, 0.7);
+	cursor: pointer;
+}
+
+.form-icon {
+	left: 1rem;
+}
+
+.password-toggle {
+	right: 1rem;
+}
+
+.password-toggle:hover {
+	color: rgba(255, 255, 255, 0.95);
+	transition: all 0.2s ease;
+}
+
+.btn-login {
+	background: rgba(37, 99, 235, 0.9);
+	color: #fff;
+	border: none;
+	padding: 0.7rem;
+	border-radius: 8px;
+	width: 100%;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	transition: all 0.2s ease;
+	font-size: 0.9rem;
+}
+
+.btn-login:hover {
+	background: rgba(29, 78, 216, 1);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+}
+
+.forgot-password {
+	text-align: center;
+	margin-top: 1rem;
+}
+
+.forgot-password a {
+	color: rgba(255, 255, 255, 0.9);
+	text-decoration: none;
+	font-size: 0.85rem;
+	transition: all 0.3s ease;
+}
+
+.forgot-password a:hover {
+	color: #2563eb;
+	text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+	.glass-effect {
+		padding: 2rem 1.5rem;
+		margin: 1rem;
+		backdrop-filter: blur(6px);
+	}
+
+	.school-logo {
+		height: 150px;
+		margin: -15px auto 0.5rem;
+	}
+
+	.login-header h2 {
+		font-size: 1.5rem;
+	}
+
+	.login-header p {
+		font-size: 0.85rem;
+	}
+}
+
+@media (max-width: 480px) {
+	.glass-effect {
+		padding: 1.5rem 1rem;
+	}
+
+	.school-logo {
+		height: 120px;
+		margin: -10px auto 0.5rem;
+	}
+}
