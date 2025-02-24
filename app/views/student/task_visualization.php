@@ -1,7 +1,21 @@
 <?php
-if (!defined('ROOT_PATH')) {
-    require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/config/dirs.php');
+if (session_status() == PHP_SESSION_NONE) {
+    session_start(); // Iniciar sesión solo si no está activa
 }
+
+if (!isset($_SESSION['user_id'])) {
+    die("Error: Sesión no iniciada. Por favor, inicia sesión.");
+}
+
+
+require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/controllers/MateriaController.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/controllers/EstadoController.php');
+
+$materiaController = new MateriaController();
+$estadoController = new EstadoController();
+
+$materias = $materiaController->obtenerMateriasEstudiante($_SESSION['user_id']);
+$estados = $estadoController->obtenerEstados();
 ?>
 
 <h1 class="position-relative header-page">Mis Tareas</h1>
@@ -15,21 +29,19 @@ if (!defined('ROOT_PATH')) {
             </div>
             <div class="row">
                 <div class="col-lg-4 col-md-6 box text-center">
-                    <i class="fa-solid fa-clock c-orange"></i>
-                    <span class="d-block" data-goal="5">0</span>
-                    Pendientes
-                </div>
-                <div class="col-lg-4 col-md-6 box text-center">
-                    <i class="fa-solid fa-spinner c-blue"></i>
-                    <span class="d-block" data-goal="3">0</span>
-                    En Progreso
+                    <i class="fa-solid fa-spinner c-orange"></i>
+                    <span class="d-block">0</span> En Progreso
                 </div>
                 <div class="col-lg-4 col-md-6 box text-center">
                     <i class="fa-regular fa-circle-check c-green"></i>
-                    <span class="d-block" data-goal="8">0</span>
-                    Completadas
+                    <span class="d-block">0</span> Completadas
                 </div>
-            </div>
+                <div class="col-lg-4 col-md-6 box text-center">
+                    <i class="far fa-times-circle c-red"></i>
+                    <span class="d-block">0</span> Vencida
+                </div>
+</div>
+
         </div>
         <!-- Listado de Tareas -->
         <div class="table mega" data-aos="fade-up">
@@ -38,17 +50,16 @@ if (!defined('ROOT_PATH')) {
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="section-des">Lista completa de tareas asignadas</span>
                     <div class="filters">
-                        <select class="form-select form-select-sm d-inline-block w-auto me-2">
-                            <option>Todas las Materias</option>
-                            <option>Matemáticas</option>
-                            <option>Literatura</option>
-                            <option>Ciencias</option>
+                        <select id="filter-materia" class="form-select form-select-sm d-inline-block w-auto me-2">
+                            <option value="">Todas las Materias</option>
+                            <option value="Ciencias">Ciencias</option>
                         </select>
-                        <select class="form-select form-select-sm d-inline-block w-auto">
-                            <option>Todos los Estados</option>
-                            <option>Pendiente</option>
-                            <option>En Progreso</option>
-                            <option>Completada</option>
+                        <select id="filter-estado" class="form-select form-select-sm d-inline-block w-auto">
+                            <option value="">Todos los Estados</option>
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="En Progreso">En Progreso</option>
+                            <option value="Completada">Completada</option>
+                            <option value="Completada">Vencida</option>
                         </select>
                     </div>
                 </div>
@@ -106,16 +117,62 @@ if (!defined('ROOT_PATH')) {
     </div>
 </div>
 
-<!-- Cargar tareas con AJAX -->
+<!-- Script para actualizar contadores -->
 <script>
-    function cargarTareas() {
-    fetch('http://localhost/GestiondeTareas/app/views/student/listar_tareas.php')
-        .then(response => response.text())
+    function actualizarContadorTareas() {
+    fetch('http://localhost/GestiondeTareas/app/views/student/contar_tareas.php')
+        .then(response => response.json())
         .then(data => {
-            document.getElementById('tareas-list').innerHTML = data;
+            if (data.error) {
+                console.error(data.error);
+                return;
+            }
+            
+            // Actualizar los contadores en la página
+            document.querySelector(".c-orange + span").textContent = data.Pendiente || 0;
+            document.querySelector(".c-blue + span").textContent = data["En Progreso"] || 0;
+            document.querySelector(".c-green + span").textContent = data.Completadas || 0;
+            document.querySelector(".c-red + span").textContent = data.Vencida || 0;
         })
-        .catch(error => console.error('Error cargando tareas:', error));
+        .catch(error => console.error("Error al obtener tareas:", error));
 }
 
-document.addEventListener('DOMContentLoaded', cargarTareas);
+// Ejecutar la función cada 5 segundos para actualizar en tiempo real
+document.addEventListener('DOMContentLoaded', () => {
+    actualizarContadorTareas();
+    setInterval(actualizarContadorTareas, 5000); // Actualiza cada 5 segundos
+});
+</script>
+
+
+<!-- Script para cargar tareas con AJAX -->
+<script>
+    function cargarTareas(filtrar = false) {
+        let materia = document.getElementById("filter-materia").value;
+        let estado = document.getElementById("filter-estado").value;
+
+        let url = filtrar 
+            ? `http://localhost/GestiondeTareas/app/views/student/filtrar_tareas.php?materia=${materia}&estado=${estado}`
+            : `http://localhost/GestiondeTareas/app/views/student/listar_tareas.php`;
+
+        fetch(url)
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('tareas-list').innerHTML = data;
+                actualizarContadorTareas(); // Actualizar contadores después de cargar tareas
+            })
+            .catch(error => console.error('Error cargando tareas:', error));
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        cargarTareas();
+
+        document.getElementById("filter-materia").addEventListener("change", function() {
+            cargarTareas(true);
+        });
+
+        document.getElementById("filter-estado").addEventListener("change", function() {
+            cargarTareas(true);
+        });
+    });
 </script>
