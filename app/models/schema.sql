@@ -58,16 +58,6 @@ CREATE TABLE materias (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Tabla de relación grupo-materia
-CREATE TABLE grupo_materia (
-    grupo_id INT,
-    materia_id INT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (grupo_id, materia_id),
-    FOREIGN KEY (grupo_id) REFERENCES grupos(id),
-    FOREIGN KEY (materia_id) REFERENCES materias(id)
-);
-
 -- Tabla de relación estudiante-grupo
 CREATE TABLE estudiante_grupo (
     estudiante_id INT,
