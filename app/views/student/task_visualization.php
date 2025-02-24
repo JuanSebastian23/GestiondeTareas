@@ -31,6 +31,47 @@ if (!defined('ROOT_PATH')) {
                 </div>
             </div>
         </div>
+        <!-- Listado de Tareas -->
+        <div class="table mega" data-aos="fade-up">
+            <div>
+                <h2 class="section-header">Todas mis Tareas</h2>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="section-des">Lista completa de tareas asignadas</span>
+                    <div class="filters">
+                        <select class="form-select form-select-sm d-inline-block w-auto me-2">
+                            <option>Todas las Materias</option>
+                            <option>Matemáticas</option>
+                            <option>Literatura</option>
+                            <option>Ciencias</option>
+                        </select>
+                        <select class="form-select form-select-sm d-inline-block w-auto">
+                            <option>Todos los Estados</option>
+                            <option>Pendiente</option>
+                            <option>En Progreso</option>
+                            <option>Completada</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="responsive-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tarea</th>
+                            <th>Materia</th>
+                            <th>Fecha Asignación</th>
+                            <th>Fecha Entrega</th>
+                            <th>Grupo</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tareas-list">
+                        <!-- Las tareas se cargarán dinámicamente aquí -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
         <!-- Tareas Próximas -->
         <div class="tasks mega" data-aos="fade-up">
@@ -62,44 +103,19 @@ if (!defined('ROOT_PATH')) {
             </div>
         </div>
 
-        <!-- Listado de Tareas -->
-        <div class="table mega" data-aos="fade-up">
-            <div>
-                <h2 class="section-header">Todas mis Tareas</h2>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="section-des">Lista completa de tareas asignadas</span>
-                    <div class="filters">
-                        <select class="form-select form-select-sm d-inline-block w-auto me-2">
-                            <option>Todas las Materias</option>
-                            <option>Matemáticas</option>
-                            <option>Literatura</option>
-                            <option>Ciencias</option>
-                        </select>
-                        <select class="form-select form-select-sm d-inline-block w-auto">
-                            <option>Todos los Estados</option>
-                            <option>Pendiente</option>
-                            <option>En Progreso</option>
-                            <option>Completada</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div class="responsive-table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Tarea</th>
-                            <th>Materia</th>
-                            <th>Fecha Entrega</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Contenido dinámico de tareas -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </div>
 </div>
+
+<!-- Cargar tareas con AJAX -->
+<script>
+    function cargarTareas() {
+    fetch('http://localhost/GestiondeTareas/app/views/student/listar_tareas.php')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('tareas-list').innerHTML = data;
+        })
+        .catch(error => console.error('Error cargando tareas:', error));
+}
+
+document.addEventListener('DOMContentLoaded', cargarTareas);
+</script>

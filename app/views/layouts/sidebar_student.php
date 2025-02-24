@@ -28,12 +28,6 @@ if (!defined('ROOT_PATH')) {
                     </a>
                 </li>
                 <li>
-                    <a class="d-flex align-items-center" href="<?= BASE_URL ?>?page=resources&role=student">
-                        <i class="fa-solid fa-book fa-fw"></i>
-                        <span>Recursos Educativos</span>
-                    </a>
-                </li>
-                <li>
                     <a class="d-flex align-items-center" href="<?= BASE_URL ?>?page=profile&role=student">
                         <i class="fa-solid fa-user-graduate fa-fw"></i>
                         <span>Mi Perfil</span>
