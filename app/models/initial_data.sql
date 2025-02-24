@@ -1,18 +1,12 @@
 USE gestion_tareas_escolares;
 
--- Insertar roles si no existen
+-- Insertar roles solo si no existen
 INSERT IGNORE INTO roles (nombre) VALUES 
 ('administrador'),
 ('profesor'),
 ('estudiante');
 
--- Insertar estados de tarea
-INSERT INTO estados_tarea (nombre) VALUES
-('pendiente'),
-('en_progreso'),
-('completada'),
-('vencida'),
-('calificada');
+-- Ya no insertamos estados_tarea aquí porque se insertaron en schema.sql
 
 -- Insertar usuarios con contraseñas sin hashear
 -- Administradores

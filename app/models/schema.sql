@@ -1,17 +1,25 @@
--- Creación de la base de datos
-CREATE DATABASE IF NOT EXISTS gestion_tareas_escolares
+-- Primero, asegurarnos de que podemos crear la base de datos
+DROP DATABASE IF EXISTS gestion_tareas_escolares;
+
+CREATE DATABASE gestion_tareas_escolares
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
 
 USE gestion_tareas_escolares;
 
--- Tabla de roles
+-- Tabla de roles (primera tabla sin dependencias)
 CREATE TABLE roles (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nombre VARCHAR(50) NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+-- Insertar roles básicos
+INSERT INTO roles (nombre) VALUES 
+('administrador'),
+('profesor'),
+('estudiante');
 
 -- Tabla de usuarios
 CREATE TABLE usuarios (
@@ -38,17 +46,6 @@ CREATE TABLE grupos (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Modificación de la tabla profesor_grupo
-CREATE TABLE IF NOT EXISTS profesor_grupo (
-    profesor_id INT,
-    grupo_id INT,
-    activo BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (profesor_id, grupo_id),
-    FOREIGN KEY (profesor_id) REFERENCES usuarios(id),
-    FOREIGN KEY (grupo_id) REFERENCES grupos(id)
-);
-
 -- Tabla de materias
 CREATE TABLE materias (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -58,7 +55,32 @@ CREATE TABLE materias (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Tabla de relación estudiante-grupo
+-- Tabla de estados de tareas
+CREATE TABLE estados_tarea (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insertar estados básicos
+INSERT INTO estados_tarea (nombre) VALUES 
+('pendiente'),
+('en_progreso'),
+('completada'),
+('vencida'),
+('calificada');
+
+-- Tablas de relaciones
+CREATE TABLE profesor_grupo (
+    profesor_id INT,
+    grupo_id INT,
+    activo BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (profesor_id, grupo_id),
+    FOREIGN KEY (profesor_id) REFERENCES usuarios(id),
+    FOREIGN KEY (grupo_id) REFERENCES grupos(id)
+);
+
 CREATE TABLE estudiante_grupo (
     estudiante_id INT,
     grupo_id INT,
@@ -68,7 +90,6 @@ CREATE TABLE estudiante_grupo (
     FOREIGN KEY (grupo_id) REFERENCES grupos(id)
 );
 
--- Tabla de relación profesor-materia
 CREATE TABLE profesor_materia (
     profesor_id INT,
     materia_id INT,
@@ -76,13 +97,6 @@ CREATE TABLE profesor_materia (
     PRIMARY KEY (profesor_id, materia_id),
     FOREIGN KEY (profesor_id) REFERENCES usuarios(id),
     FOREIGN KEY (materia_id) REFERENCES materias(id)
-);
-
--- Tabla de estados de tareas
-CREATE TABLE estados_tarea (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    nombre VARCHAR(50) NOT NULL UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tabla de tareas
@@ -104,7 +118,7 @@ CREATE TABLE tareas (
     FOREIGN KEY (estado_id) REFERENCES estados_tarea(id)
 );
 
--- Tabla de entregas de tareas
+-- Tabla de entregas
 CREATE TABLE entregas_tarea (
     id INT PRIMARY KEY AUTO_INCREMENT,
     tarea_id INT NOT NULL,
@@ -137,10 +151,8 @@ CREATE INDEX idx_tareas_estado ON tareas(estado_id);
 CREATE INDEX idx_entregas_tarea_estado ON entregas_tarea(estado_id);
 CREATE INDEX idx_notificaciones_usuario ON notificaciones(usuario_id, leida);
 CREATE INDEX idx_materias_nombre ON materias(nombre);
-CREATE INDEX idx_grupo_materia_materia ON grupo_materia(materia_id);
-CREATE INDEX idx_profesor_materia_materia ON profesor_materia(materia_id);
 
--- Trigger para crear notificaciones automáticas
+-- Crear trigger para notificaciones
 DELIMITER //
 CREATE TRIGGER trig_notificar_tarea_proxima
 AFTER INSERT ON tareas
