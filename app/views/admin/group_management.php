@@ -26,6 +26,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!-- Asegurarse de que jQuery esté cargado -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+
+<!-- jQuery y DataTables JS -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
 <div class="container-fluid px-4">
     <h1 class="mt-4">Gestión de Grupos</h1>
     <ol class="breadcrumb mb-4">
@@ -167,6 +175,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <button class="btn btn-sm btn-info" onclick="abrirMatriculacion(<?= $grupo['id'] ?>)">
                                             <i class="fas fa-users"></i>
                                         </button>
+                                        <button class="btn btn-sm btn-warning" onclick="gestionarMaterias(<?= $grupo['id'] ?>)">
+                                            <i class="fas fa-book"></i>
+                                        </button>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
@@ -228,6 +239,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 
+<!-- Sección de Gestión de Materias -->
+<div class="container-fluid px-4 gestion-materias-section" id="gestionMateriasSection" style="display:none;">
+    <div class="row">
+        <div class="col-12">
+            <button class="btn btn-secondary mb-3" onclick="volverAGrupos()">
+                <i class="fas fa-arrow-left"></i> Volver a Grupos
+            </button>
+            <h2 class="mb-4">Gestión de Materias del Grupo: <span id="nombreGrupoMaterias"></span></h2>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-book me-1"></i>
+                    Materias Disponibles
+                </div>
+                <div class="card-body">
+                    <input type="hidden" id="grupo_id_materias">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="materiasTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Nombre</th>
+                                    <th>Profesor</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Se llena dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Asignar Profesor -->
+<div class="modal fade" id="asignarProfesorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Asignar Profesor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="materia_id_asignacion">
+                <div class="mb-3">
+                    <label for="profesor_id_asignacion" class="form-label">Seleccione un Profesor</label>
+                    <select class="form-select" id="profesor_id_asignacion" required>
+                        <option value="">Seleccione...</option>
+                        <?php foreach ($profesores as $profesor): ?>
+                        <option value="<?= $profesor['id'] ?>">
+                            <?= htmlspecialchars($profesor['nombre'] . ' ' . $profesor['apellidos']) ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="asignarMateriaConProfesor()">Asignar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal de Edición -->
 <div class="modal fade" id="editarGrupoModal" tabindex="-1">
     <div class="modal-dialog">
@@ -270,9 +353,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script>
-$(document).ready(function() {
-    // Funciones globales
-    window.editarGrupo = function(id) {
+// Definir todas las funciones en el ámbito global
+const initFunctions = {
+    editarGrupo: function(id) {
         $.get('<?= BASE_URL ?>/app/ajax/get_grupo.php', {
             id: id
         }).done(function(response) {
@@ -289,9 +372,9 @@ $(document).ready(function() {
         }).fail(function() {
             showAlert('Error', 'Error en la conexión', 'error');
         });
-    };
+    },
 
-    window.cambiarEstado = function(id, estado) {
+    cambiarEstado: function(id, estado) {
         confirmAction(
             '¿Estás seguro?',
             'Esta acción cambiará el estado del grupo',
@@ -309,96 +392,87 @@ $(document).ready(function() {
                 form.submit();
             }
         });
-    };
+    },
 
-    window.abrirMatriculacion = function(grupo_id) {
+    abrirMatriculacion: function(grupo_id) {
         $('.container-fluid').first().hide();
         $('#matriculacionSection').show();
         $('#grupo_id_matricula').val(grupo_id);
         
-        // Obtener nombre del grupo
         $.get('<?= BASE_URL ?>/app/ajax/get_grupo.php', {
             id: grupo_id
         }).done(function(response) {
             if (response.success) {
                 $('#nombreGrupo').text(response.data.nombre);
+                initFunctions.cargarEstudiantes(grupo_id);
             }
         });
-        
-        cargarEstudiantes(grupo_id);
-    };
+    },
 
-    window.volverAGrupos = function() {
+    gestionarMaterias: function(grupoId) {
+        $('.container-fluid').first().hide();
+        $('#gestionMateriasSection').show();
+        $('#grupo_id_materias').val(grupoId);
+        
+        $.get('<?= BASE_URL ?>/app/ajax/get_grupo.php', {
+            id: grupoId
+        }).done(function(response) {
+            if (response.success) {
+                $('#nombreGrupoMaterias').text(response.data.nombre);
+                initFunctions.cargarMaterias(grupoId);
+            }
+        });
+    },
+
+    cargarMaterias: function(grupoId) {
+        $.get('<?= BASE_URL ?>/app/ajax/get_materias_grupo.php', {
+            grupo_id: grupoId
+        }).done(function(response) {
+            if (response.success) {
+                initFunctions.actualizarTablaMaterias(response.data || []);
+            } else {
+                showAlert('Error', response.error, 'error');
+            }
+        });
+    },
+
+    actualizarTablaMaterias: function(materias) {
+        const tabla = $('#materiasTable tbody');
+        tabla.empty();
+        
+        if (Array.isArray(materias)) {
+            materias.forEach(function(materia) {
+                const asignada = materia.asignacion_activa == 1;
+                const row = `
+                    <tr>
+                        <td>${materia.codigo}</td>
+                        <td>${materia.nombre}</td>
+                        <td>${materia.profesor_nombre ? materia.profesor_nombre + ' ' + materia.profesor_apellidos : 'No asignado'}</td>
+                        <td class="text-center">
+                            <span class="badge bg-${asignada ? 'success' : 'danger'}">
+                                ${asignada ? 'Asignada' : 'No Asignada'}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-${asignada ? 'danger' : 'success'}" 
+                                    onclick="initFunctions.toggleAsignacionMateria(${materia.id}, ${!asignada})">
+                                <i class="fas fa-${asignada ? 'times' : 'check'}"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tabla.append(row);
+            });
+        }
+    },
+
+    volverAGrupos: function() {
         $('#matriculacionSection').hide();
+        $('#gestionMateriasSection').hide();
         $('.container-fluid').first().show();
-    };
+    },
 
-    window.matricularSeleccionados = function() {
-        const grupo_id = $('#grupo_id_matricula').val();
-        const estudiantes = $('#estudiantes_disponibles').val();
-        
-        if (!estudiantes || !estudiantes.length) {
-            showAlert('Error', 'Selecciona al menos un estudiante', 'error');
-            return;
-        }
-
-        $.ajax({
-            url: '<?= BASE_URL ?>/app/ajax/matricular.php',
-            method: 'POST',
-            dataType: 'json',
-            data: {
-                accion: 'matricular',
-                grupo_id: grupo_id,
-                estudiantes: estudiantes
-            },
-            success: function(response) {
-                if (response.success) {
-                    showAlert('Éxito', response.message, 'success');
-                    cargarEstudiantes(grupo_id);
-                } else if (response.partial_success) {
-                    showAlert('Advertencia', response.message, 'warning');
-                    cargarEstudiantes(grupo_id);
-                } else {
-                    showAlert('Error', response.error || 'Error al matricular estudiantes', 'error');
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error("Error detallado:", xhr.responseText);
-                showAlert('Error', 'Error en la conexión: ' + error, 'error');
-            }
-        });
-    };
-
-    window.desmatricularSeleccionados = function() {
-        const grupo_id = $('#grupo_id_matricula').val();
-        const estudiantes = $('#estudiantes_matriculados').val();
-        
-        if (!estudiantes.length) {
-            showAlert('Error', 'Selecciona al menos un estudiante', 'error');
-            return;
-        }
-
-        confirmAction('¿Estás seguro?', 'Esta acción desmatriculará a los estudiantes seleccionados', 'warning')
-        .then((result) => {
-            if (result.isConfirmed) {
-                estudiantes.forEach(function(estudiante_id) {
-                    $.post('<?= BASE_URL ?>/app/ajax/matricular.php', {
-                        accion: 'desmatricular',
-                        grupo_id: grupo_id,
-                        estudiante_id: estudiante_id
-                    }, function(response) {
-                        if (response.success) {
-                            cargarEstudiantes(grupo_id);
-                        } else {
-                            showAlert('Error', response.error, 'error');
-                        }
-                    });
-                });
-            }
-        });
-    };
-
-    window.cargarEstudiantes = function(grupo_id) {
+    cargarEstudiantes: function(grupo_id) {
         // Cargar estudiantes no matriculados
         $.get('<?= BASE_URL ?>/app/ajax/get_estudiantes.php', {
             accion: 'no_matriculados',
@@ -430,9 +504,125 @@ $(document).ready(function() {
                 });
             }
         });
-    };
+    },
 
-    // DataTables initialization
+    matricularSeleccionados: function() {
+        const grupo_id = $('#grupo_id_matricula').val();
+        const estudiantes = $('#estudiantes_disponibles').val();
+        
+        if (!estudiantes || !estudiantes.length) {
+            showAlert('Error', 'Selecciona al menos un estudiante', 'error');
+            return;
+        }
+
+        $.ajax({
+            url: '<?= BASE_URL ?>/app/ajax/matricular.php',
+            method: 'POST',
+            dataType: 'json',
+            data: {
+                accion: 'matricular',
+                grupo_id: grupo_id,
+                estudiantes: estudiantes
+            },
+            success: function(response) {
+                if (response.success) {
+                    showAlert('Éxito', response.message, 'success');
+                    initFunctions.cargarEstudiantes(grupo_id);
+                } else {
+                    showAlert('Error', response.error || 'Error al matricular estudiantes', 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                showAlert('Error', 'Error en la conexión: ' + error, 'error');
+            }
+        });
+    },
+
+    desmatricularSeleccionados: function() {
+        const grupo_id = $('#grupo_id_matricula').val();
+        const estudiantes = $('#estudiantes_matriculados').val();
+        
+        if (!estudiantes || !estudiantes.length) {
+            showAlert('Error', 'Selecciona al menos un estudiante', 'error');
+            return;
+        }
+
+        confirmAction('¿Estás seguro?', 'Esta acción desmatriculará a los estudiantes seleccionados', 'warning')
+        .then((result) => {
+            if (result.isConfirmed) {
+                estudiantes.forEach(function(estudiante_id) {
+                    $.post('<?= BASE_URL ?>/app/ajax/matricular.php', {
+                        accion: 'desmatricular',
+                        grupo_id: grupo_id,
+                        estudiante_id: estudiante_id
+                    }, function(response) {
+                        if (response.success) {
+                            initFunctions.cargarEstudiantes(grupo_id);
+                        } else {
+                            showAlert('Error', response.error, 'error');
+                        }
+                    });
+                });
+            }
+        });
+    },
+
+    toggleAsignacionMateria: function(materiaId, asignar) {
+        const grupoId = $('#grupo_id_materias').val();
+        
+        if (asignar) {
+            $('#materia_id_asignacion').val(materiaId);
+            $('#asignarProfesorModal').modal('show');
+        } else {
+            $.post('<?= BASE_URL ?>/app/ajax/asignar_materia.php', {
+                accion: 'desasignar',
+                grupo_id: grupoId,
+                materia_id: materiaId
+            }).done(function(response) {
+                if (response.success) {
+                    showAlert('Éxito', 'Materia desasignada correctamente', 'success');
+                    initFunctions.cargarMaterias(grupoId);
+                } else {
+                    showAlert('Error', response.error, 'error');
+                }
+            });
+        }
+    },
+
+    asignarMateriaConProfesor: function() {
+        const grupoId = $('#grupo_id_materias').val();
+        const materiaId = $('#materia_id_asignacion').val();
+        const profesorId = $('#profesor_id_asignacion').val();
+        
+        if (!profesorId) {
+            showAlert('Error', 'Debe seleccionar un profesor', 'error');
+            return;
+        }
+        
+        $.post('<?= BASE_URL ?>/app/ajax/asignar_materia.php', {
+            accion: 'asignar',
+            grupo_id: grupoId,
+            materia_id: materiaId,
+            profesor_id: profesorId
+        }).done(function(response) {
+            $('#asignarProfesorModal').modal('hide');
+            if (response.success) {
+                showAlert('Éxito', 'Materia asignada correctamente', 'success');
+                initFunctions.cargarMaterias(grupoId);
+            } else {
+                showAlert('Error', response.error, 'error');
+            }
+        });
+    }
+};
+
+// Asignar todas las funciones al objeto window
+Object.keys(initFunctions).forEach(key => {
+    window[key] = initFunctions[key];
+});
+
+$(document).ready(function() {
+    // Inicialización de DataTables
     $('#gruposTable').DataTable({
         language: {
             url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'

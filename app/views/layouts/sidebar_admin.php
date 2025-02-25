@@ -27,6 +27,12 @@ if (!defined('ROOT_PATH')) {
                         <span>Gestión de Grupos</span>
                     </a>
                 </li>
+                <li>
+                    <a class="d-flex align-items-center" href="<?= BASE_URL ?>?page=subject_management&role=admin">
+                        <i class="fa-solid fa-book fa-fw"></i>
+                        <span>Gestión de Materias</span>
+                    </a>
+                </li>
             </ul>
         </div>
         <div class="log-out">
