@@ -50,7 +50,9 @@ CREATE TABLE grupos (
 CREATE TABLE materias (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nombre VARCHAR(100) NOT NULL,
+    codigo VARCHAR(20) NOT NULL UNIQUE,
     descripcion TEXT,
+    activo BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -97,6 +99,19 @@ CREATE TABLE profesor_materia (
     PRIMARY KEY (profesor_id, materia_id),
     FOREIGN KEY (profesor_id) REFERENCES usuarios(id),
     FOREIGN KEY (materia_id) REFERENCES materias(id)
+);
+
+-- Tabla de relación entre grupos y materias
+CREATE TABLE grupo_materia (
+    grupo_id INT,
+    materia_id INT,
+    profesor_id INT,
+    activo BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (grupo_id, materia_id),
+    FOREIGN KEY (grupo_id) REFERENCES grupos(id),
+    FOREIGN KEY (materia_id) REFERENCES materias(id),
+    FOREIGN KEY (profesor_id) REFERENCES usuarios(id)
 );
 
 -- Tabla de tareas

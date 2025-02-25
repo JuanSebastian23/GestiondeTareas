@@ -198,4 +198,46 @@ class Grupo {
         $stmt->execute();
         return $stmt->get_result()->fetch_assoc();
     }
+
+    public function obtenerMaterias($grupo_id) {
+        $sql = "SELECT m.*, u.nombre as profesor_nombre, u.apellidos as profesor_apellidos, 
+                gm.activo as asignacion_activa, gm.profesor_id
+                FROM materias m
+                LEFT JOIN grupo_materia gm ON m.id = gm.materia_id AND gm.grupo_id = ?
+                LEFT JOIN usuarios u ON gm.profesor_id = u.id
+                ORDER BY m.nombre";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $grupo_id);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function asignarMateria($grupo_id, $materia_id, $profesor_id) {
+        try {
+            $stmt = $this->conn->prepare("
+                INSERT INTO grupo_materia (grupo_id, materia_id, profesor_id) 
+                VALUES (?, ?, ?) 
+                ON DUPLICATE KEY UPDATE profesor_id = ?, activo = TRUE");
+            $stmt->bind_param("iiii", $grupo_id, $materia_id, $profesor_id, $profesor_id);
+            return $stmt->execute();
+        } catch (Exception $e) {
+            error_log("Error asignando materia: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    public function desasignarMateria($grupo_id, $materia_id) {
+        try {
+            $stmt = $this->conn->prepare("
+                UPDATE grupo_materia 
+                SET activo = FALSE 
+                WHERE grupo_id = ? AND materia_id = ?");
+            $stmt->bind_param("ii", $grupo_id, $materia_id);
+            return $stmt->execute();
+        } catch (Exception $e) {
+            error_log("Error desasignando materia: " . $e->getMessage());
+            throw $e;
+        }
+    }
 }

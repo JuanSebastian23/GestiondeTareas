@@ -216,4 +216,39 @@ class GrupoController {
             return ['error' => 'Error al desmatricular estudiante: ' . $e->getMessage()];
         }
     }
+
+    public function obtenerMateriasGrupo($grupo_id) {
+        try {
+            return $this->grupoModel->obtenerMaterias($grupo_id);
+        } catch (Exception $e) {
+            return ['error' => $e->getMessage()];
+        }
+    }
+
+    public function procesarAsignacionMateria($datos) {
+        if (empty($datos['grupo_id']) || empty($datos['materia_id']) || empty($datos['profesor_id'])) {
+            return ['error' => 'Datos incompletos para la asignación'];
+        }
+
+        try {
+            if ($datos['accion'] === 'asignar') {
+                $resultado = $this->grupoModel->asignarMateria(
+                    $datos['grupo_id'],
+                    $datos['materia_id'],
+                    $datos['profesor_id']
+                );
+            } else {
+                $resultado = $this->grupoModel->desasignarMateria(
+                    $datos['grupo_id'],
+                    $datos['materia_id']
+                );
+            }
+
+            return $resultado 
+                ? ['success' => true, 'message' => 'Operación realizada con éxito'] 
+                : ['error' => 'No se pudo completar la operación'];
+        } catch (Exception $e) {
+            return ['error' => $e->getMessage()];
+        }
+    }
 }
