@@ -19,6 +19,14 @@ class GrupoController {
         }
     }
 
+    public function obtenerGrupos() {
+        try {
+            return $this->grupoModel->obtenerTodos();
+        } catch (Exception $e) {
+            return ['error' => $e->getMessage()];
+        }
+    }
+
     public function procesarAccion() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') return null;
 
