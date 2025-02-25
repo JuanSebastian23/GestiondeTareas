@@ -36,7 +36,7 @@ class Materia {
 
     public function obtenerTodas() {
         $sql = "SELECT m.*, 
-                COALESCE((SELECT COUNT(*) FROM profesor_materia WHERE materia_id = m.id), 0) as total_grupos 
+                (SELECT COUNT(*) FROM grupo_materia gm WHERE gm.materia_id = m.id AND gm.activo = TRUE) as total_grupos 
                 FROM materias m 
                 ORDER BY m.nombre";
         return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
@@ -98,6 +98,7 @@ class Materia {
                 FROM grupos g
                 LEFT JOIN grupo_materia gm ON g.id = gm.grupo_id AND gm.materia_id = :materia_id
                 LEFT JOIN usuarios u ON gm.profesor_id = u.id
+                WHERE g.activo = TRUE
                 ORDER BY g.nombre";
         
         $stmt = $this->db->prepare($sql);

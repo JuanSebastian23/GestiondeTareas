@@ -50,22 +50,6 @@ if (!defined('ROOT_PATH')) {
             </div>
         </div>
 
-        <!-- Gráficos de Rendimiento -->
-        <div class="row">
-            <div class="col-md-8">
-                <div class="chart mega" data-aos="fade-up">
-                    <h2 class="section-header">Evolución del Rendimiento</h2>
-                    <canvas id="graficoRendimiento" height="300"></canvas>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="chart mega" data-aos="fade-up">
-                    <h2 class="section-header">Distribución</h2>
-                    <canvas id="graficoPie" height="300"></canvas>
-                </div>
-            </div>
-        </div>
-
         <!-- Tabla de Calificaciones Detallada -->
         <div class="table mega" data-aos="fade-up">
             <div class="d-flex justify-content-between align-items-center mb-4">

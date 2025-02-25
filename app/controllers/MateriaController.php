@@ -28,6 +28,18 @@ class MateriaController {
         return $this->materiaModel->obtenerPorId($id);
     }
 
+    public function obtenerMateriasEstudiante($estudiante_id) {
+        return $this->materiaModel->getMateriasEstudiante($estudiante_id);
+    }
+
+    public function obtenerGrupos($materia_id) {
+        try {
+            return $this->materiaModel->obtenerGrupos($materia_id);
+        } catch (Exception $e) {
+            return ['error' => $e->getMessage()];
+        }
+    }
+
     public function procesarAccion() {
         if (!isset($_POST['accion'])) {
             return ['error' => 'Acción no especificada'];
