@@ -29,19 +29,16 @@ $estados = $estadoController->obtenerEstados();
             </div>
             <div class="row">
                 <div class="col-lg-4 col-md-6 box text-center">
-                    <i class="fa-solid fa-clock c-orange"></i>
-                    <span class="d-block" data-goal="5">0</span>
-                    Pendientes
-                </div>
-                <div class="col-lg-4 col-md-6 box text-center">
-                    <i class="fa-solid fa-spinner c-blue"></i>
-                    <span class="d-block" data-goal="3">0</span>
-                    En Progreso
+                    <i class="fa-solid fa-spinner c-orange"></i>
+                    <span class="d-block">0</span> En Progreso
                 </div>
                 <div class="col-lg-4 col-md-6 box text-center">
                     <i class="fa-regular fa-circle-check c-green"></i>
-                    <span class="d-block" data-goal="8">0</span>
-                    Completadas
+                    <span class="d-block">0</span> Completadas
+                </div>
+                <div class="col-lg-4 col-md-6 box text-center">
+                    <i class="far fa-times-circle c-red"></i>
+                    <span class="d-block">0</span> Vencida
                 </div>
 </div>
 
@@ -53,17 +50,16 @@ $estados = $estadoController->obtenerEstados();
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="section-des">Lista completa de tareas asignadas</span>
                     <div class="filters">
-                        <select class="form-select form-select-sm d-inline-block w-auto me-2">
-                            <option>Todas las Materias</option>
-                            <option>Matemáticas</option>
-                            <option>Literatura</option>
-                            <option>Ciencias</option>
+                        <select id="filter-materia" class="form-select form-select-sm d-inline-block w-auto me-2">
+                            <option value="">Todas las Materias</option>
+                            <option value="Ciencias">Ciencias</option>
                         </select>
-                        <select class="form-select form-select-sm d-inline-block w-auto">
-                            <option>Todos los Estados</option>
-                            <option>Pendiente</option>
-                            <option>En Progreso</option>
-                            <option>Completada</option>
+                        <select id="filter-estado" class="form-select form-select-sm d-inline-block w-auto">
+                            <option value="">Todos los Estados</option>
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="En Progreso">En Progreso</option>
+                            <option value="Completada">Completada</option>
+                            <option value="Completada">Vencida</option>
                         </select>
                     </div>
                 </div>
@@ -72,13 +68,13 @@ $estados = $estadoController->obtenerEstados();
                 <table>
                     <thead>
                         <tr>
-                            <th scope="col">Tarea</th>
-                            <th scope="col">Materia</th>
-                            <th scope="col">Fecha Asignación</th>
-                            <th scope="col">Fecha Entrega</th>
-                            <th scope="col">Grupo</th>
-                            <th scope="col">Estado</th>
-                            <th scope="col">Acciones</th>
+                            <th>Tarea</th>
+                            <th>Materia</th>
+                            <th>Fecha Asignación</th>
+                            <th>Fecha Entrega</th>
+                            <th>Grupo</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="tareas-list">
@@ -87,51 +83,39 @@ $estados = $estadoController->obtenerEstados();
                 </table>
             </div>
         </div>
-    </div>
 
-    <!-- Tareas Próximas -->
-    <div class="card shadow-sm" data-aos="fade-up" data-aos-delay="900" data-aos-duration="1000">
-        <div class="card-header bg-white">
-            <h2 class="card-title h5 text-primary mb-0">Tareas Próximas a Vencer</h2>
-        </div>
-        <div class="card-body">
-            <div class="list-group list-group-flush">
-                <div class="list-group-item d-flex justify-content-between align-items-center p-3">
-                    <div>
-                        <h6 class="mb-1">Proyecto de Matemáticas</h6>
-                        <small class="text-muted">Entrega: Mañana - 8:00 AM</small>
+        <!-- Tareas Próximas -->
+        <div class="tasks mega" data-aos="fade-up">
+            <div>
+                <h2 class="section-header">Tareas Próximas a Vencer</h2>
+                <span class="section-des">Tareas con fecha límite cercana</span>
+            </div>
+            <div class="data">
+                <div class="d-flex align-items-center item">
+                    <div class="info">
+                        <h3>Proyecto de Matemáticas</h3>
+                        <p>Entrega: Mañana - 8:00 AM</p>
                     </div>
                     <div>
-                        <span class="badge bg-warning text-dark rounded-pill">Pendiente</span>
+                        <span class="label bg-orange">Pendiente</span>
                         <button class="btn btn-sm btn-primary ms-2">Ver Detalles</button>
                     </div>
                 </div>
-                <div class="list-group-item d-flex justify-content-between align-items-center p-3">
-                    <div>
-                        <h6 class="mb-1">Ensayo de Literatura</h6>
-                        <small class="text-muted">Entrega: En 2 días</small>
+                <div class="d-flex align-items-center item">
+                    <div class="info">
+                        <h3>Ensayo de Literatura</h3>
+                        <p>Entrega: En 2 días</p>
                     </div>
                     <div>
-                        <span class="badge bg-primary rounded-pill">En Progreso</span>
+                        <span class="label bg-blue">En Progreso</span>
                         <button class="btn btn-sm btn-primary ms-2">Ver Detalles</button>
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
 </div>
-
-<style>
-.circle-icon {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto;
-}
-</style>
 
 <!-- Script para actualizar contadores -->
 <script>
