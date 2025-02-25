@@ -1,6 +1,7 @@
 <?php
 if (!defined('ROOT_PATH')) {
     require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/config/dirs.php');
+    require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/models/MateriaModel.php');
 }
 require_once(MODELS_PATH . '/Materia.php');
 
@@ -29,7 +30,7 @@ class MateriaController {
     }
 
     public function obtenerMateriasEstudiante($estudiante_id) {
-        return $this->materiaModel->getMateriasEstudiante($estudiante_id);
+        return $this->materiaModel-> obtenerMateriasPorEstudiante($estudiante_id);
     }
 
     public function obtenerGrupos($materia_id) {
