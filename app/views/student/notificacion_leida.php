@@ -1,6 +1,16 @@
 <?php
-require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/controllers/NotificationController.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/models/NotificationModel.php');
+session_start();
 
-$notificacionController = new NotificacionController();
-$notificacionController->marcarComoLeida();
+header('Content-Type: application/json');
+
+if (!isset($_SESSION['user_id']) || !isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    echo json_encode(['success' => false, 'error' => 'Acceso no autorizado']);
+    exit();
+}
+
+$notificacionModel = new NotificationModel();
+$success = $notificacionModel->marcarComoLeida($_GET['id'], $_SESSION['user_id']);
+
+echo json_encode(['success' => $success]);
 ?>

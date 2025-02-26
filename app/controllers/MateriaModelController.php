@@ -1,7 +1,7 @@
 <?php
 require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/models/MateriaModel.php');
 
-class MateriaController {
+class MateriaModelController {
     private $materiaModel;
 
     public function __construct() {
@@ -9,7 +9,7 @@ class MateriaController {
     }
 
     public function obtenerMateriasEstudiante($estudiante_id) {
-        return $this->materiaModel->obtenerMateriasPorEstudiante($estudiante_id);
+        return $this->materiaModel->obtenerMateriasPorEstudiante($estudiante_id); // ✅ Nombre correcto
     }
 }
 ?>

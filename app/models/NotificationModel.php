@@ -1,7 +1,7 @@
 <?php
 require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/config/DbConfig.php');
 
-class NotificacionModel {
+class NotificationModel {
     private $ncon;
 
     public function __construct() {
@@ -31,12 +31,12 @@ class NotificacionModel {
         return $notificaciones;
     }
 
-    // Marcar una notificación como leída
-    public function marcarComoLeida($id) {
-        $sql = "UPDATE notificaciones SET leida = 1 WHERE id = ?";
+    // Marcar una notificación como leída SOLO SI pertenece al usuario autenticado
+    public function marcarComoLeida($id, $usuario_id) {
+        $sql = "UPDATE notificaciones SET leida = 1 WHERE id = ? AND usuario_id = ?";
         $stmt = $this->ncon->prepare($sql);
-        $stmt->bind_param("i", $id);
-        return $stmt->execute();
+        $stmt->bind_param("ii", $id, $usuario_id);
+        return $stmt->execute() && $stmt->affected_rows > 0;
     }
 }
 ?>
