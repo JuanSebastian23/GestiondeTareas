@@ -19,15 +19,6 @@ function asset($path) {
         <div class="d-flex align-items-center">
             <!-- Notificaciones -->
             <div class="dropdown position-relative">
-                <button type="button" 
-                        class="btn btn-link text-dark position-relative me-4" 
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false">
-                    <i class="far fa-bell fs-5"></i>
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                        3
-                    </span>
-                </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" 
                     style="width: 300px; position: absolute; z-index: 1500;">
                     <li class="border-bottom p-3">

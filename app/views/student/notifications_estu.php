@@ -1,7 +1,19 @@
 <?php
-if (!defined('ROOT_PATH')) {
-    require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/config/dirs.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/config/dirs.php');
+require_once(CONTROLLERS_PATH . '/NotificationController.php');
+require_once(CONTROLLERS_PATH . '/AuthController.php');
+
+$auth = new AuthController();
+$notificationController = new NotificationController();
+
+// Verificar sesión activa
+if (!isset($_SESSION['user_id'])) {
+    header('Location: ' . BASE_URL . '/app/views/auth/login.php');
+    exit();
 }
+
+$user_id = $_SESSION['user_id'];
+$notificaciones = $notificationController->obtenerNotificaciones($user_id);
 ?>
 
 <h1 class="position-relative header-page">Notificaciones</h1>
@@ -9,78 +21,49 @@ if (!defined('ROOT_PATH')) {
     <div class="wrapper">
         <div class="latest mega" data-aos="fade-up">
             <h2 class="section-header">Notificaciones Recientes</h2>
-            <div class="data">
-                <div class="d-flex align-items-center item">
-                    <i class="fa-solid fa-file-alt fa-2x c-blue me-3"></i>
-                    <div class="info">
-                        <h3>Nueva entrega: Proyecto Final</h3>
-                        <p>Juan Pérez - 1°A - Hace 5 minutos</p>
-                    </div>
-                    <button class="btn btn-sm btn-primary">Ver</button>
-                </div>
-                <div class="d-flex align-items-center item">
-                    <i class="fa-solid fa-question-circle fa-2x c-orange me-3"></i>
-                    <div class="info">
-                        <h3>Consulta pendiente</h3>
-                        <p>María García - 2°B - Hace 1 hora</p>
-                    </div>
-                    <button class="btn btn-sm btn-primary">Responder</button>
-                </div>
+            <div class="data" id="notificaciones-container">
+                <?php if (empty($notificaciones)): ?>
+                    <p>No tienes nuevas notificaciones.</p>
+                <?php else: ?>
+                    <?php foreach ($notificaciones as $notif): ?>
+                        <?php 
+                            $colorIcono = $notif['leida'] == 0 ? "c-orange" : "c-blue";
+                            $icono = $notif['leida'] == 0 ? "fa-bell" : "fa-check-circle";
+                        ?>
+                        <div class="d-flex align-items-center item">
+                            <i class="fa-solid <?= $icono ?> fa-2x <?= $colorIcono ?> me-3"></i>
+                            <div class="info">
+                                <h3><?= htmlspecialchars($notif['titulo']) ?></h3>
+                                <p><?= htmlspecialchars($notif['mensaje']) ?> - <?= date("d M Y H:i", strtotime($notif['created_at'])) ?></p>
+                            </div>
+                            <button class="btn btn-sm btn-primary" 
+                                        onclick="marcarComoLeida(<?= $notif['id'] ?>); redirigirPagina();">
+                                        <?= $notif['leida'] == 0 ? "Marcar como leída" : "Ver" ?>
+                                    </button>
+                            </button>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
     </div>
 </div>
+
 <script>
-    function cargarNotificaciones() {
-        fetch('http://localhost/GestiondeTareas/app/views/student/notificaciones.php')
-            .then(response => response.json())
-            .then(data => {
-                let container = document.getElementById("notificaciones-container");
-                container.innerHTML = ""; // Limpiar contenido previo
-
-                if (data.length === 0) {
-                    container.innerHTML = "<p>No tienes nuevas notificaciones.</p>";
-                    return;
-                }
-
-                data.forEach(notif => {
-                    let colorIcono = notif.leida === "0" ? "c-orange" : "c-blue";
-                    let icono = notif.leida === "0" ? "fa-bell" : "fa-check-circle";
-                    
-                    let notifHTML = `
-                        <div class="d-flex align-items-center item">
-                            <i class="fa-solid ${icono} fa-2x ${colorIcono} me-3"></i>
-                            <div class="info">
-                                <h3>${notif.titulo}</h3>
-                                <p>${notif.mensaje} - ${formatearFecha(notif.created_at)}</p>
-                            </div>
-                            <button class="btn btn-sm btn-primary" onclick="marcarComoLeida(${notif.id})">
-                                ${notif.leida === "0" ? "Marcar como leída" : "Ver"}
-                            </button>
-                        </div>
-                    `;
-                    container.innerHTML += notifHTML;
-                });
-            })
-            .catch(error => console.error("Error al obtener notificaciones:", error));
-    }
-
     function marcarComoLeida(id) {
-        fetch(`http://localhost/GestiondeTareas/app/views/student/marcar_leida.php?id=${id}`)
+        fetch(`<?= BASE_URL ?>/app/views/student/notificacion_leida.php?id=${id}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    cargarNotificaciones(); // Recargar la lista después de marcar como leída
+                    location.reload();
                 }
             })
             .catch(error => console.error("Error al marcar como leída:", error));
     }
+</script>
 
-    function formatearFecha(fecha) {
-        let date = new Date(fecha);
-        return date.toLocaleString("es-ES", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
-    }
-
-    // Cargar notificaciones al inicio
-    cargarNotificaciones();
+<script>
+function redirigirPagina() {
+    window.location.href = "<?= BASE_URL ?>?page=task_visualization&role=student";
+}
 </script>

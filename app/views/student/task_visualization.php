@@ -9,9 +9,10 @@ if (!isset($_SESSION['user_id'])) {
 
 
 require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/controllers/MateriaController.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/controllers/MateriaModelController.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/controllers/EstadoController.php');
 
-$materiaController = new MateriaController();
+$materiaController = new MateriaModelController();
 $estadoController = new EstadoController();
 
 $materias = $materiaController->obtenerMateriasEstudiante($_SESSION['user_id']);

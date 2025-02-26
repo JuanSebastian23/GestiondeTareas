@@ -29,10 +29,6 @@ class MateriaController {
         return $this->materiaModel->obtenerPorId($id);
     }
 
-    public function obtenerMateriasEstudiante($estudiante_id) {
-        return $this->materiaModel-> obtenerMateriasPorEstudiante($estudiante_id);
-    }
-
     public function obtenerGrupos($materia_id) {
         try {
             return $this->materiaModel->obtenerGrupos($materia_id);

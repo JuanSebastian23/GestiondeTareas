@@ -99,6 +99,9 @@ $currentUser = $auth->getCurrentUser();
                 case 'grades':
                     require_once(VIEWS_PATH . '/student/grades.php');
                     break;
+                case 'notificationss':
+                    require_once(VIEWS_PATH . '/student/notifications_estu.php');
+                    break;
                 case 'resources':
                     require_once(VIEWS_PATH . '/student/resources.php');
                     break;
