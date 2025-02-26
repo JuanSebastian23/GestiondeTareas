@@ -20,105 +20,125 @@ $estados = $estadoController->obtenerEstados();
 ?>
 
 <h1 class="position-relative header-page">Mis Tareas</h1>
-<div class="dashboard-page">
-    <div class="wrapper">
+<div class="container mt-4">
+    <div class="row">
         <!-- Contador de Tareas -->
-        <div class="statistics mega" data-aos="fade-up">
-            <div>
-                <h2 class="section-header">Estado de Mis Tareas</h2>
-                <span class="section-des">Resumen de tareas asignadas</span>
-            </div>
-            <div class="row">
-                <div class="col-lg-4 col-md-6 box text-center">
-                    <i class="fa-solid fa-spinner c-orange"></i>
-                    <span class="d-block">0</span> En Progreso
-                </div>
-                <div class="col-lg-4 col-md-6 box text-center">
-                    <i class="fa-regular fa-circle-check c-green"></i>
-                    <span class="d-block">0</span> Completadas
-                </div>
-                <div class="col-lg-4 col-md-6 box text-center">
-                    <i class="far fa-times-circle c-red"></i>
-                    <span class="d-block">0</span> Vencida
-                </div>
-</div>
-
-        </div>
-        <!-- Listado de Tareas -->
-        <div class="table mega" data-aos="fade-up">
-            <div>
-                <h2 class="section-header">Todas mis Tareas</h2>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="section-des">Lista completa de tareas asignadas</span>
-                    <div class="filters">
-                    <select id="filter-materia" class="form-select form-select-sm d-inline-block w-auto me-2">
-                            <option value="">Todas las Materias</option>
-                            <?php foreach ($materias as $materia): ?>
-                                <option value="<?= htmlspecialchars($materia['nombre']) ?>">
-                                    <?= htmlspecialchars($materia['nombre']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <select id="filter-estado" class="form-select form-select-sm d-inline-block w-auto">
-                            <option value="">Todos los Estados</option>
-                            <option value="Pendiente">Pendiente</option>
-                            <option value="En Progreso">En Progreso</option>
-                            <option value="Completada">Completada</option>
-                            <option value="Completada">Vencida</option>
-                        </select>
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Estado de Mis Tareas</h2>
+                    <p class="card-text">Resumen de tareas asignadas</p>
+                    <div class="row text-center">
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body">
+                                    <i class="fa-solid fa-spinner text-warning"></i>
+                                    <h5 class="card-title">En Progreso</h5>
+                                    <p class="card-text"><span>0</span></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card border-success">
+                                <div class="card-body">
+                                    <i class="fa-regular fa-circle-check text-success"></i>
+                                    <h5 class="card-title">Completadas</h5>
+                                    <p class="card-text"><span>0</span></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card border-danger">
+                                <div class="card-body">
+                                    <i class="far fa-times-circle text-danger"></i>
+                                    <h5 class="card-title">Vencida</h5>
+                                    <p class="card-text"><span>0</span></p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="responsive-table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Tarea</th>
-                            <th>Materia</th>
-                            <th>Fecha Asignación</th>
-                            <th>Fecha Entrega</th>
-                            <th>Grupo</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tareas-list">
-                        <!-- Las tareas se cargarán dinámicamente aquí -->
-                    </tbody>
-                </table>
+        </div>
+
+        <!-- Listado de Tareas -->
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Todas mis Tareas</h2>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <p class="card-text">Lista completa de tareas asignadas</p>
+                        <div class="d-flex">
+                            <select id="filter-materia" class="form-select form-select-sm me-2">
+                                <option value="">Todas las Materias</option>
+                                <?php foreach ($materias as $materia): ?>
+                                    <option value="<?= htmlspecialchars($materia['nombre']) ?>">
+                                        <?= htmlspecialchars($materia['nombre']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <select id="filter-estado" class="form-select form-select-sm">
+                                <option value="">Todos los Estados</option>
+                                <option value="Pendiente">Pendiente</option>
+                                <option value="En Progreso">En Progreso</option>
+                                <option value="Completada">Completada</option>
+                                <option value="Vencida">Vencida</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Tarea</th>
+                                    <th>Materia</th>
+                                    <th>Fecha Asignación</th>
+                                    <th>Fecha Entrega</th>
+                                    <th>Grupo</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tareas-list">
+                                <!-- Las tareas se cargarán dinámicamente aquí -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Tareas Próximas -->
-        <div class="tasks mega" data-aos="fade-up">
-            <div>
-                <h2 class="section-header">Tareas Próximas a Vencer</h2>
-                <span class="section-des">Tareas con fecha límite cercana</span>
-            </div>
-            <div class="data">
-                <div class="d-flex align-items-center item">
-                    <div class="info">
-                        <h3>Proyecto de Matemáticas</h3>
-                        <p>Entrega: Mañana - 8:00 AM</p>
-                    </div>
-                    <div>
-                        <span class="label bg-orange">Pendiente</span>
-                        <button class="btn btn-sm btn-primary ms-2">Ver Detalles</button>
-                    </div>
-                </div>
-                <div class="d-flex align-items-center item">
-                    <div class="info">
-                        <h3>Ensayo de Literatura</h3>
-                        <p>Entrega: En 2 días</p>
-                    </div>
-                    <div>
-                        <span class="label bg-blue">En Progreso</span>
-                        <button class="btn btn-sm btn-primary ms-2">Ver Detalles</button>
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Tareas Próximas a Vencer</h2>
+                    <p class="card-text">Tareas con fecha límite cercana</p>
+                    <div class="list-group">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">Proyecto de Matemáticas</h5>
+                                <small>Entrega: Mañana - 8:00 AM</small>
+                            </div>
+                            <div>
+                                <span class="badge bg-warning">Pendiente</span>
+                                <button class="btn btn-sm btn-primary ms-2">Ver Detalles</button>
+                            </div>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">Ensayo de Literatura</h5>
+                                <small>Entrega: En 2 días</small>
+                            </div>
+                            <div>
+                                <span class="badge bg-primary">En Progreso</span>
+                                <button class="btn btn-sm btn-primary ms-2">Ver Detalles</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 
