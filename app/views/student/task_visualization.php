@@ -51,9 +51,13 @@ $estados = $estadoController->obtenerEstados();
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="section-des">Lista completa de tareas asignadas</span>
                     <div class="filters">
-                        <select id="filter-materia" class="form-select form-select-sm d-inline-block w-auto me-2">
+                    <select id="filter-materia" class="form-select form-select-sm d-inline-block w-auto me-2">
                             <option value="">Todas las Materias</option>
-                            <option value="Ciencias">Ciencias</option>
+                            <?php foreach ($materias as $materia): ?>
+                                <option value="<?= htmlspecialchars($materia['nombre']) ?>">
+                                    <?= htmlspecialchars($materia['nombre']) ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                         <select id="filter-estado" class="form-select form-select-sm d-inline-block w-auto">
                             <option value="">Todos los Estados</option>
