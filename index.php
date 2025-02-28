@@ -42,6 +42,7 @@ $currentUser = $auth->getCurrentUser();
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-bootstrap-4/bootstrap-4.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </head>
 
 <body>
@@ -157,6 +158,7 @@ $currentUser = $auth->getCurrentUser();
     <script src="<?= BASE_URL ?>/public/assets/js/main.js"></script>
     <script src="<?= BASE_URL ?>/public/assets/js/aos.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.js"></script>
+
     <script>
         // Inicializar todos los tooltips y popovers de Bootstrap
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));

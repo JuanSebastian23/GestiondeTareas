@@ -29,12 +29,9 @@ if (empty($tareas)) {
             <td><?= htmlspecialchars($tarea['estado_nombre']) ?></td>
             <td>
                 <?php if ($tarea['estado_nombre'] !== 'completada' && $tarea['estado_nombre'] !== 'vencida' && $tarea['estado_nombre'] !== 'calificada'): ?>
-                    <button class="btn btn-sm btn-primary btn-ver-tarea" 
-                data-bs-toggle="modal" 
-                data-bs-target="#modalSubirTarea"
-                data-id="<?= $tarea['id'] ?>">
+                    "<button class="btn btn-sm btn-primary btn-ver-tarea" data-id="<?= $tarea['id'] ?>" data-bs-toggle="modal" data-bs-target="#modalSubirTarea">
             Ver
-        </button>
+        </button>";
                 <?php endif; ?>
             </td>
         </tr>

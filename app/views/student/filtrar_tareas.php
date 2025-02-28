@@ -29,15 +29,18 @@ if (empty($tareas)) {
                 <td>";
 
         // Solo mostramos el botón "Ver" si el estado NO está en la lista de excluidos
-        if (!in_array($estado_tarea, $estados_excluidos)) {
-            echo "<button class='btn btn-sm btn-primary btn-ver-tarea' 
-                        data-id='{$tarea['id']}' 
-                        data-bs-toggle='modal' 
-                        data-bs-target='#modalSubirTarea'>
-                        Ver
-                  </button>";
-        }
-
+        if ($tarea['estado_nombre'] !== 'completada' && $tarea['estado_nombre'] !== 'vencida' && $tarea['estado_nombre'] !== 'calificada'): ?>
+            "<button class="btn btn-sm btn-primary btn-ver-tarea" data-id="<?= $tarea['id'] ?>" data-bs-toggle="modal" data-bs-target="#modalSubirTarea">
+    Ver
+</button>";
+        <?php endif; ?>
+        </td>   
+        </tr>
+        <?php
+    }
+}
+?>
+  
         echo "</td></tr>";
     }
 }

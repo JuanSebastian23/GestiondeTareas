@@ -117,28 +117,35 @@ $estados = $estadoController->obtenerEstados();
     </div>
 </div>
 
-<!-- MODAL para subir tarea -->
-<div class="modal fade" id="subirTareaModal" tabindex="-1">
+<!-- Modal para subir tarea -->
+<div class="modal fade" id="modalSubirTarea" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Subir Tarea</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title" id="modalLabel">Subir Tarea</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
-                <input type="hidden" id="tarea_id">
-                <div class="mb-3">
-                    <label for="archivo_tarea" class="form-label">Adjuntar Archivo</label>
-                    <input type="file" class="form-control" id="archivo_tarea">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" onclick="subirTarea()">Subir</button>
+                <form id="formSubirTarea" enctype="multipart/form-data">
+                    <input type="hidden" name="tarea_id" id="modalTareaId">
+
+                    <div class="mb-3">
+                        <label for="comentarios" class="form-label">Comentarios:</label>
+                        <textarea name="comentarios" id="comentarios" class="form-control"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="archivo" class="form-label">Subir archivo:</label>
+                        <input type="file" name="archivo" id="archivo" class="form-control">
+                    </div>
+
+                    <button type="submit" class="btn btn-success">Entregar Tarea</button>
+                </form>
             </div>
         </div>
     </div>
 </div>
+
 
 
         <!-- Tareas Próximas -->
@@ -176,3 +183,4 @@ $estados = $estadoController->obtenerEstados();
 </div>
 
 <script src="<?= BASE_URL ?>/public/assets/js/Tareas.js"></script>
+<script src="public\assets\js\Modal_tarea"></script>
