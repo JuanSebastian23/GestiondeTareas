@@ -183,4 +183,4 @@ $estados = $estadoController->obtenerEstados();
 </div>
 
 <script src="<?= BASE_URL ?>/public/assets/js/Tareas.js"></script>
-<script src="public\assets\js\Modal_tarea"></script>
+<script src="public\assets\js\Modal_tarea.js"></script>
