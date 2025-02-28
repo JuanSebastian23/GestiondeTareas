@@ -2,108 +2,135 @@
 if (!defined('ROOT_PATH')) {
     require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/config/dirs.php');
 }
-require_once(CONFIG_PATH . '/Database.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/config/DbConfig.php');
 
 class Materia {
-    private $db;
+    private $conn;
 
     public function __construct() {
-        $this->db = Database::getInstance()->getConnection();
+        $this->conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+        $this->conn->set_charset("utf8mb4");
     }
 
     public function contarMaterias($soloActivas = false) {
-        $sql = "SELECT COUNT(*) FROM materias";
+        $sql = "SELECT COUNT(*) as total FROM materias";
         if ($soloActivas) {
             $sql .= " WHERE activo = TRUE";
         }
-        return (int)$this->db->query($sql)->fetchColumn();
+        $result = $this->conn->query($sql);
+        $row = $result->fetch_assoc();
+        return $row['total'];
     }
 
     public function contarGruposAsignados() {
-        $sql = "SELECT COUNT(*) FROM profesor_materia";
-        return (int)$this->db->query($sql)->fetchColumn();
+        $sql = "SELECT COUNT(*) as total FROM profesor_materia";
+        $result = $this->conn->query($sql);
+        $row = $result->fetch_assoc();
+        return $row['total'];
     }
 
     public function contarProfesoresAsignados() {
-        $sql = "SELECT COUNT(DISTINCT profesor_id) FROM profesor_materia";
-        return (int)$this->db->query($sql)->fetchColumn();
+        $sql = "SELECT COUNT(DISTINCT profesor_id) as total FROM profesor_materia";
+        $result = $this->conn->query($sql);
+        $row = $result->fetch_assoc();
+        return $row['total'];
     }
 
     public function contarTareasAsignadas() {
-        $sql = "SELECT COUNT(*) FROM tareas";
-        return (int)$this->db->query($sql)->fetchColumn();
+        $sql = "SELECT COUNT(*) as total FROM tareas";
+        $result = $this->conn->query($sql);
+        $row = $result->fetch_assoc();
+        return $row['total'];
     }
 
     public function obtenerTodas() {
         $sql = "SELECT m.*, 
-                (SELECT COUNT(*) FROM grupo_materia gm WHERE gm.materia_id = m.id AND gm.activo = TRUE) as total_grupos 
-                FROM materias m 
+                   COUNT(DISTINCT gm.grupo_id) as total_grupos
+                FROM materias m
+                LEFT JOIN grupo_materia gm ON m.id = gm.materia_id
+                GROUP BY m.id
                 ORDER BY m.nombre";
-        return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+                
+        $result = $this->conn->query($sql);
+        return $result->fetch_all(MYSQLI_ASSOC);
     }
 
     public function obtenerPorId($id) {
-        $sql = "SELECT * FROM materias WHERE id = :id";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([':id' => $id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt = $this->conn->prepare("SELECT * FROM materias WHERE id = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
     }
 
     public function crear($datos) {
         try {
-            $sql = "INSERT INTO materias (nombre, codigo, descripcion) 
-                    VALUES (:nombre, :codigo, :descripcion)";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute([
-                ':nombre' => $datos['nombre'],
-                ':codigo' => $datos['codigo'],
-                ':descripcion' => $datos['descripcion']
-            ]);
-            return ['success' => true];
-        } catch (PDOException $e) {
-            if ($e->getCode() == 23000) { // Código de error para duplicado
+            // Verificar si el código ya existe
+            $stmt = $this->conn->prepare("SELECT id FROM materias WHERE codigo = ?");
+            $stmt->bind_param("s", $datos['codigo']);
+            $stmt->execute();
+            if ($stmt->get_result()->num_rows > 0) {
                 return ['error' => 'Ya existe una materia con ese código'];
             }
+            
+            // Insertar la nueva materia
+            $stmt = $this->conn->prepare("INSERT INTO materias (nombre, codigo, descripcion) VALUES (?, ?, ?)");
+            $stmt->bind_param("sss", $datos['nombre'], $datos['codigo'], $datos['descripcion']);
+            
+            if ($stmt->execute()) {
+                return ['success' => true, 'id' => $this->conn->insert_id];
+            } else {
+                return ['error' => 'Error al insertar en la base de datos: ' . $this->conn->error];
+            }
+        } catch (Exception $e) {
             return ['error' => 'Error al crear la materia: ' . $e->getMessage()];
         }
     }
 
     public function actualizar($datos) {
-        $sql = "UPDATE materias 
-                SET nombre = :nombre, 
-                    codigo = :codigo, 
-                    descripcion = :descripcion 
-                WHERE id = :id";
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
-            ':id' => $datos['id'],
-            ':nombre' => $datos['nombre'],
-            ':codigo' => $datos['codigo'],
-            ':descripcion' => $datos['descripcion']
-        ]);
+        try {
+            // Verificar que no exista otra materia con el mismo código
+            $stmt = $this->conn->prepare("SELECT id FROM materias WHERE codigo = ? AND id != ?");
+            $stmt->bind_param("si", $datos['codigo'], $datos['id']);
+            $stmt->execute();
+            if ($stmt->get_result()->num_rows > 0) {
+                return false;
+            }
+            
+            $stmt = $this->conn->prepare("UPDATE materias SET nombre = ?, codigo = ?, descripcion = ? WHERE id = ?");
+            $stmt->bind_param("sssi", $datos['nombre'], $datos['codigo'], $datos['descripcion'], $datos['id']);
+            return $stmt->execute();
+        } catch (Exception $e) {
+            error_log("Error actualizando materia: " . $e->getMessage());
+            return false;
+        }
     }
 
     public function cambiarEstado($id, $activo) {
-        $sql = "UPDATE materias SET activo = :activo WHERE id = :id";
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
-            ':id' => $id,
-            ':activo' => $activo
-        ]);
+        try {
+            $stmt = $this->conn->prepare("UPDATE materias SET activo = ? WHERE id = ?");
+            $stmt->bind_param("ii", $activo, $id);
+            return $stmt->execute();
+        } catch (Exception $e) {
+            error_log("Error cambiando estado de materia: " . $e->getMessage());
+            return false;
+        }
     }
 
     public function obtenerGrupos($materia_id) {
         $sql = "SELECT g.*, u.nombre as profesor_nombre, u.apellidos as profesor_apellidos,
                 gm.activo as asignacion_activa, gm.profesor_id
                 FROM grupos g
-                LEFT JOIN grupo_materia gm ON g.id = gm.grupo_id AND gm.materia_id = :materia_id
+                LEFT JOIN grupo_materia gm ON g.id = gm.grupo_id AND gm.materia_id = ?
                 LEFT JOIN usuarios u ON gm.profesor_id = u.id
                 WHERE g.activo = TRUE
                 ORDER BY g.nombre";
         
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([':materia_id' => $materia_id]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $materia_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_all(MYSQLI_ASSOC);
     }
 
     public function obtenerProfesoresDisponibles() {
@@ -111,6 +138,27 @@ class Materia {
                 INNER JOIN roles r ON u.rol_id = r.id 
                 WHERE r.nombre = 'profesor' AND u.activo = TRUE
                 ORDER BY u.nombre, u.apellidos";
-        return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        return $this->conn->query($sql)->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function contarGruposConMaterias() {
+        $sql = "SELECT COUNT(DISTINCT grupo_id) as total FROM grupo_materia WHERE activo = 1";
+        $result = $this->conn->query($sql);
+        $row = $result->fetch_assoc();
+        return $row['total'];
+    }
+    
+    public function contarProfesoresConMaterias() {
+        $sql = "SELECT COUNT(DISTINCT profesor_id) as total FROM grupo_materia WHERE activo = 1";
+        $result = $this->conn->query($sql);
+        $row = $result->fetch_assoc();
+        return $row['total'];
+    }
+    
+    public function contarTareas() {
+        $sql = "SELECT COUNT(*) as total FROM tareas";
+        $result = $this->conn->query($sql);
+        $row = $result->fetch_assoc();
+        return $row['total'];
     }
 }

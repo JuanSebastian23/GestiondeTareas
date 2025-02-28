@@ -3,25 +3,89 @@ if (!defined('ROOT_PATH')) {
     require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/config/dirs.php');
 }
 
-// Datos estáticos para demostración de interfaz
-$statsUsuarios = [
-    'total' => 250,
-    'estudiantes' => 200,
-    'profesores' => 45,
-    'admins' => 5,
-    'activos' => 230,
-    'inactivos' => 20
-];
+// Cargar los controladores necesarios
+require_once(CONTROLLERS_PATH . '/UsuarioController.php');
+require_once(CONTROLLERS_PATH . '/GrupoController.php');
+require_once(CONTROLLERS_PATH . '/MateriaController.php');
 
+// Inicializar los controladores
+$usuarioController = new UsuarioController();
+$grupoController = new GrupoController();
+$materiaController = new MateriaController();
+
+// Obtener datos de usuarios
+$usuarioModel = new Usuario();
+$statsUsuariosPorRol = $usuarioModel->getConteoUsuariosPorRol();
+$totalUsuarios = 0;
+$totalEstudiantes = 0;
+$totalProfesores = 0;
+$totalAdmins = 0;
+$totalActivos = 0;
+$totalInactivos = 0;
+
+// Procesar los datos de usuarios
+foreach ($statsUsuariosPorRol as $stat) {
+    $totalUsuarios += $stat['total'];
+    $totalActivos += $stat['activos'];
+    $totalInactivos += $stat['inactivos'];
+    
+    switch(strtolower($stat['rol'])) {
+        case 'estudiante':
+            $totalEstudiantes = $stat['total'];
+            $estudiantesActivos = $stat['activos'];
+            break;
+        case 'profesor':
+            $totalProfesores = $stat['total'];
+            $profesoresActivos = $stat['activos'];
+            break;
+        case 'administrador':
+            $totalAdmins = $stat['total'];
+            $adminsActivos = $stat['activos'];
+            break;
+    }
+}
+
+// Obtener datos de grupos
+$grupoStats = $grupoController->obtenerEstadisticas();
+
+// Corregir los datos de grupos si es necesario
 $statsGrupos = [
-    'total' => 15,
-    'activos' => 12
+    'total' => $grupoStats['total_grupos'] ?? 0,
+    'activos' => $grupoStats['grupos_activos'] ?? $grupoStats['total_grupos'] ?? 0,
 ];
+$statsGrupos['inactivos'] = $statsGrupos['total'] - $statsGrupos['activos'];
 
+// Verificar si hay inconsistencias
+if ($statsGrupos['activos'] > $statsGrupos['total']) {
+    $statsGrupos['activos'] = $statsGrupos['total'];
+    $statsGrupos['inactivos'] = 0;
+} elseif ($statsGrupos['activos'] < 0) {
+    $statsGrupos['activos'] = 0;
+    $statsGrupos['inactivos'] = $statsGrupos['total'];
+}
+
+// Obtener datos de materias
+$materiaStats = $materiaController->obtenerEstadisticas();
+
+// Corregir los datos de materias si es necesario
 $statsMaterias = [
-    'total' => 45,
-    'activas' => 40
+    'total' => $materiaStats['total_materias'] ?? 0,
+    'activas' => $materiaStats['materias_activas'] ?? $materiaStats['total_materias'] ?? 0,
 ];
+$statsMaterias['inactivas'] = $statsMaterias['total'] - $statsMaterias['activas'];
+
+// Verificar si hay inconsistencias
+if ($statsMaterias['activas'] > $statsMaterias['total']) {
+    $statsMaterias['activas'] = $statsMaterias['total'];
+    $statsMaterias['inactivas'] = 0;
+} elseif ($statsMaterias['activas'] < 0) {
+    $statsMaterias['activas'] = 0;
+    $statsMaterias['inactivas'] = $statsMaterias['total'];
+}
+
+// Depuración (opcional)
+// echo "<pre>Grupos: "; print_r($statsGrupos); echo "</pre>";
+// echo "<pre>Materias: "; print_r($statsMaterias); echo "</pre>";
 ?>
 
 <!-- Incluir el CSS específico para el dashboard admin -->
@@ -54,13 +118,13 @@ $statsMaterias = [
                         </div>
                         <h5 class="card-title mb-0">Usuarios</h5>
                     </div>
-                    <h2 class="stats-number mb-2"><?= $statsUsuarios['total'] ?></h2>
+                    <h2 class="stats-number mb-2"><?= $totalUsuarios ?></h2>
                     <div class="d-flex flex-wrap stats-badges-container">
                         <span class="badge bg-success rounded-pill badge-stat me-2 mb-2 mb-md-0">
-                            <i class="fas fa-user-check me-1"></i><?= $statsUsuarios['activos'] ?> activos
+                            <i class="fas fa-user-check me-1"></i><?= $totalActivos ?> activos
                         </span>
                         <span class="badge bg-danger rounded-pill badge-stat">
-                            <i class="fas fa-user-slash me-1"></i><?= $statsUsuarios['inactivos'] ?> inactivos
+                            <i class="fas fa-user-slash me-1"></i><?= $totalInactivos ?> inactivos
                         </span>
                     </div>
                 </div>
@@ -82,15 +146,15 @@ $statsMaterias = [
                         </div>
                         <h5 class="card-title mb-0">Estudiantes</h5>
                     </div>
-                    <h2 class="stats-number mb-2"><?= $statsUsuarios['estudiantes'] ?></h2>
+                    <h2 class="stats-number mb-2"><?= $totalEstudiantes ?></h2>
                     <div class="progress" style="height: 8px;">
-                        <?php $porcentaje = ($statsUsuarios['estudiantes'] / $statsUsuarios['total']) * 100; ?>
-                        <div class="progress-bar bg-success" style="width: <?= $porcentaje ?>%" 
-                             aria-valuenow="<?= $porcentaje ?>" aria-valuemin="0" aria-valuemax="100"></div>
+                        <?php $porcentajeEstudiantes = ($totalUsuarios > 0) ? ($totalEstudiantes / $totalUsuarios) * 100 : 0; ?>
+                        <div class="progress-bar bg-success" style="width: <?= $porcentajeEstudiantes ?>%" 
+                             aria-valuenow="<?= $porcentajeEstudiantes ?>" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
                     <div class="progress-label">
                         <small class="text-muted">Proporción de usuarios</small>
-                        <small class="progress-percentage text-success"><?= number_format($porcentaje, 1) ?>%</small>
+                        <small class="progress-percentage text-success"><?= number_format($porcentajeEstudiantes, 1) ?>%</small>
                     </div>
                 </div>
                 <div class="card-footer bg-transparent border-0 pt-0">
@@ -111,15 +175,15 @@ $statsMaterias = [
                         </div>
                         <h5 class="card-title mb-0">Profesores</h5>
                     </div>
-                    <h2 class="stats-number mb-2"><?= $statsUsuarios['profesores'] ?></h2>
+                    <h2 class="stats-number mb-2"><?= $totalProfesores ?></h2>
                     <div class="progress" style="height: 8px;">
-                        <?php $porcentaje = ($statsUsuarios['profesores'] / $statsUsuarios['total']) * 100; ?>
-                        <div class="progress-bar bg-warning" style="width: <?= $porcentaje ?>%" 
-                             aria-valuenow="<?= $porcentaje ?>" aria-valuemin="0" aria-valuemax="100"></div>
+                        <?php $porcentajeProfesores = ($totalUsuarios > 0) ? ($totalProfesores / $totalUsuarios) * 100 : 0; ?>
+                        <div class="progress-bar bg-warning" style="width: <?= $porcentajeProfesores ?>%" 
+                             aria-valuenow="<?= $porcentajeProfesores ?>" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
                     <div class="progress-label">
                         <small class="text-muted">Proporción de usuarios</small>
-                        <small class="progress-percentage text-warning"><?= number_format($porcentaje, 1) ?>%</small>
+                        <small class="progress-percentage text-warning"><?= number_format($porcentajeProfesores, 1) ?>%</small>
                     </div>
                 </div>
                 <div class="card-footer bg-transparent border-0 pt-0">
@@ -140,15 +204,15 @@ $statsMaterias = [
                         </div>
                         <h5 class="card-title mb-0">Administradores</h5>
                     </div>
-                    <h2 class="stats-number mb-2"><?= $statsUsuarios['admins'] ?></h2>
+                    <h2 class="stats-number mb-2"><?= $totalAdmins ?></h2>
                     <div class="progress" style="height: 8px;">
-                        <?php $porcentaje = ($statsUsuarios['admins'] / $statsUsuarios['total']) * 100; ?>
-                        <div class="progress-bar bg-info" style="width: <?= $porcentaje ?>%" 
-                             aria-valuenow="<?= $porcentaje ?>" aria-valuemin="0" aria-valuemax="100"></div>
+                        <?php $porcentajeAdmins = ($totalUsuarios > 0) ? ($totalAdmins / $totalUsuarios) * 100 : 0; ?>
+                        <div class="progress-bar bg-info" style="width: <?= $porcentajeAdmins ?>%" 
+                             aria-valuenow="<?= $porcentajeAdmins ?>" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
                     <div class="progress-label">
                         <small class="text-muted">Proporción de usuarios</small>
-                        <small class="progress-percentage text-info"><?= number_format($porcentaje, 1) ?>%</small>
+                        <small class="progress-percentage text-info"><?= number_format($porcentajeAdmins, 1) ?>%</small>
                     </div>
                 </div>
                 <div class="card-footer bg-transparent border-0 pt-0">
@@ -194,7 +258,12 @@ $statsMaterias = [
                                             <div class="position-relative circle-chart mb-3 mb-sm-0 mb-lg-3 mb-xl-0" style="width: 100%; max-width: 120px; margin: 0 auto;">
                                                 <svg width="100%" height="120" viewBox="0 0 120 120">
                                                     <circle cx="60" cy="60" r="54" fill="none" stroke="#e9ecef" stroke-width="12" class="circle-bg"></circle>
-                                                    <?php $ratio = $statsGrupos['activos'] / $statsGrupos['total']; ?>
+                                                    <?php 
+                                                    // Asegurarse de que el ratio es calculado correctamente
+                                                    $ratio = ($statsGrupos['total'] > 0) ? ($statsGrupos['activos'] / $statsGrupos['total']) : 0;
+                                                    // Limitar el ratio entre 0 y 1 para evitar valores inválidos
+                                                    $ratio = max(0, min(1, $ratio));
+                                                    ?>
                                                     <circle cx="60" cy="60" r="54" fill="none" stroke="#0d6efd" stroke-width="12"
                                                             stroke-dasharray="<?= 339.292 * $ratio ?> 339.292"
                                                             stroke-dashoffset="0" 
@@ -214,7 +283,7 @@ $statsMaterias = [
                                             </div>
                                             <div>
                                                 <i class="fas fa-times-circle text-danger me-1"></i>
-                                                <span>Inactivos: <?= $statsGrupos['total'] - $statsGrupos['activos'] ?></span>
+                                                <span>Inactivos: <?= $statsGrupos['inactivos'] ?></span>
                                             </div>
                                         </div>
                                     </div>
@@ -239,7 +308,12 @@ $statsMaterias = [
                                             <div class="position-relative circle-chart mb-3 mb-sm-0 mb-lg-3 mb-xl-0" style="width: 100%; max-width: 120px; margin: 0 auto;">
                                                 <svg width="100%" height="120" viewBox="0 0 120 120">
                                                     <circle cx="60" cy="60" r="54" fill="none" stroke="#e9ecef" stroke-width="12" class="circle-bg"></circle>
-                                                    <?php $ratio = $statsMaterias['activas'] / $statsMaterias['total']; ?>
+                                                    <?php 
+                                                    // Asegurarse de que el ratio es calculado correctamente
+                                                    $ratio = ($statsMaterias['total'] > 0) ? ($statsMaterias['activas'] / $statsMaterias['total']) : 0;
+                                                    // Limitar el ratio entre 0 y 1 para evitar valores inválidos
+                                                    $ratio = max(0, min(1, $ratio));
+                                                    ?>
                                                     <circle cx="60" cy="60" r="54" fill="none" stroke="#198754" stroke-width="12"
                                                             stroke-dasharray="<?= 339.292 * $ratio ?> 339.292"
                                                             stroke-dashoffset="0" 
@@ -259,7 +333,7 @@ $statsMaterias = [
                                             </div>
                                             <div>
                                                 <i class="fas fa-times-circle text-danger me-1"></i>
-                                                <span>Inactivas: <?= $statsMaterias['total'] - $statsMaterias['activas'] ?></span>
+                                                <span>Inactivas: <?= $statsMaterias['inactivas'] ?></span>
                                             </div>
                                         </div>
                                     </div>
@@ -348,7 +422,7 @@ document.addEventListener('DOMContentLoaded', function() {
             data: {
                 labels: ['Estudiantes', 'Profesores', 'Administradores'],
                 datasets: [{
-                    data: [<?= $statsUsuarios['estudiantes'] ?>, <?= $statsUsuarios['profesores'] ?>, <?= $statsUsuarios['admins'] ?>],
+                    data: [<?= $totalEstudiantes ?>, <?= $totalProfesores ?>, <?= $totalAdmins ?>],
                     backgroundColor: [
                         'rgba(40, 167, 69, 0.8)',
                         'rgba(255, 193, 7, 0.8)',

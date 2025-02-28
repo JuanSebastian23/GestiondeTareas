@@ -3,17 +3,17 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/models/Grupo.php'
 require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/models/Usuario.php');
 
 class GrupoController {
-    private $grupoModel;
-    private $usuarioModel;
+    private $modelo;
+    private $usuarioModelo;
 
     public function __construct() {
-        $this->grupoModel = new Grupo();
-        $this->usuarioModel = new Usuario();
+        $this->modelo = new Grupo();
+        $this->usuarioModelo = new Usuario();
     }
 
     public function obtenerProfesores() {
         try {
-            return $this->usuarioModel->obtenerProfesores();
+            return $this->usuarioModelo->obtenerProfesores();
         } catch (Exception $e) {
             return ['error' => $e->getMessage()];
         }
@@ -21,7 +21,7 @@ class GrupoController {
 
     public function obtenerGrupos() {
         try {
-            return $this->grupoModel->obtenerTodos();
+            return $this->modelo->obtenerTodos();
         } catch (Exception $e) {
             return ['error' => $e->getMessage()];
         }
@@ -64,7 +64,7 @@ class GrupoController {
         }
 
         try {
-            $creado = $this->grupoModel->crearGrupo(
+            $creado = $this->modelo->crearGrupo(
                 $datos['nombre'],
                 $datos['descripcion'] ?? '',
                 $datos['profesor_id'] ?? null
@@ -84,7 +84,7 @@ class GrupoController {
         }
 
         try {
-            $actualizado = $this->grupoModel->actualizarGrupo(
+            $actualizado = $this->modelo->actualizarGrupo(
                 $datos['id'],
                 $datos['nombre'],
                 $datos['descripcion'] ?? '',
@@ -105,7 +105,7 @@ class GrupoController {
         }
 
         try {
-            $actualizado = $this->grupoModel->cambiarEstado($datos['id'], $datos['activo']);
+            $actualizado = $this->modelo->cambiarEstado($datos['id'], $datos['activo']);
             return $actualizado 
                 ? ['success' => 'Estado del grupo actualizado correctamente'] 
                 : ['error' => 'No se pudo actualizar el estado del grupo'];
@@ -115,12 +115,35 @@ class GrupoController {
     }
 
     public function obtenerEstadisticas() {
-        return $this->grupoModel->obtenerEstadisticas();
+        $stats = [];
+        
+        // Obtener todos los grupos
+        $grupos = $this->modelo->obtenerTodos();
+        
+        // Contar el total de grupos
+        $stats['total_grupos'] = count($grupos);
+        
+        // Contar grupos activos
+        $gruposActivos = array_filter($grupos, function($grupo) {
+            return $grupo['activo'] == 1;
+        });
+        $stats['grupos_activos'] = count($gruposActivos);
+        
+        // Obtener total de estudiantes matriculados
+        $stats['total_estudiantes'] = $this->modelo->contarEstudiantes();
+        
+        // Obtener profesores asignados
+        $stats['total_profesores'] = $this->modelo->contarProfesores();
+        
+        // Obtener materias asignadas
+        $stats['total_materias'] = $this->modelo->contarMaterias();
+        
+        return $stats;
     }
 
     public function obtenerTodos() {
         try {
-            return $this->grupoModel->obtenerTodos();
+            return $this->modelo->obtenerTodos();
         } catch (Exception $e) {
             error_log("Error obteniendo grupos: " . $e->getMessage());
             return [];
@@ -129,7 +152,7 @@ class GrupoController {
 
     public function obtenerEstudiantesNoMatriculados($grupo_id) {
         try {
-            return $this->grupoModel->obtenerEstudiantesNoMatriculados($grupo_id);
+            return $this->modelo->obtenerEstudiantesNoMatriculados($grupo_id);
         } catch (Exception $e) {
             return ['error' => $e->getMessage()];
         }
@@ -137,7 +160,7 @@ class GrupoController {
 
     public function obtenerEstudiantesMatriculados($grupo_id) {
         try {
-            return $this->grupoModel->obtenerEstudiantesMatriculados($grupo_id);
+            return $this->modelo->obtenerEstudiantesMatriculados($grupo_id);
         } catch (Exception $e) {
             return ['error' => $e->getMessage()];
         }
@@ -145,7 +168,7 @@ class GrupoController {
 
     public function obtenerPorId($id) {
         try {
-            return $this->grupoModel->obtenerPorId($id);
+            return $this->modelo->obtenerPorId($id);
         } catch (Exception $e) {
             throw new Exception("Error al obtener grupo: " . $e->getMessage());
         }
@@ -175,7 +198,7 @@ class GrupoController {
                 }
 
                 try {
-                    if ($this->grupoModel->matricularEstudiante(
+                    if ($this->modelo->matricularEstudiante(
                         intval($datos['grupo_id']),
                         intval($estudiante_id)
                     )) {
@@ -213,7 +236,7 @@ class GrupoController {
         }
 
         try {
-            $desmatriculado = $this->grupoModel->desmatricularEstudiante(
+            $desmatriculado = $this->modelo->desmatricularEstudiante(
                 $datos['grupo_id'],
                 $datos['estudiante_id']
             );
@@ -227,7 +250,7 @@ class GrupoController {
 
     public function obtenerMateriasGrupo($grupo_id) {
         try {
-            return $this->grupoModel->obtenerMaterias($grupo_id);
+            return $this->modelo->obtenerMaterias($grupo_id);
         } catch (Exception $e) {
             return ['error' => $e->getMessage()];
         }
@@ -240,13 +263,13 @@ class GrupoController {
 
         try {
             if ($datos['accion'] === 'asignar') {
-                $resultado = $this->grupoModel->asignarMateria(
+                $resultado = $this->modelo->asignarMateria(
                     $datos['grupo_id'],
                     $datos['materia_id'],
                     $datos['profesor_id']
                 );
             } else {
-                $resultado = $this->grupoModel->desasignarMateria(
+                $resultado = $this->modelo->desasignarMateria(
                     $datos['grupo_id'],
                     $datos['materia_id']
                 );

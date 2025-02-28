@@ -11,16 +11,18 @@ class Grupo {
 
     public function obtenerTodos() {
         $sql = "SELECT g.*, 
-                COUNT(DISTINCT eg.estudiante_id) as total_estudiantes,
-                u.nombre as profesor_nombre, 
-                u.apellidos as profesor_apellidos
+                   COUNT(DISTINCT eg.estudiante_id) as total_estudiantes,
+                   u.nombre as profesor_nombre, 
+                   u.apellidos as profesor_apellidos
                 FROM grupos g
                 LEFT JOIN profesor_grupo pg ON g.id = pg.grupo_id
-                LEFT JOIN usuarios u ON pg.profesor_id = u.id
+                LEFT JOIN usuarios u ON pg.profesor_id = u.id AND u.activo = 1
                 LEFT JOIN estudiante_grupo eg ON g.id = eg.grupo_id
                 GROUP BY g.id
                 ORDER BY g.nombre";
-        return $this->conn->query($sql)->fetch_all(MYSQLI_ASSOC);
+                
+        $result = $this->conn->query($sql);
+        return $result->fetch_all(MYSQLI_ASSOC);
     }
 
     public function crearGrupo($nombre, $descripcion, $profesor_id) {
@@ -239,5 +241,27 @@ class Grupo {
             error_log("Error desasignando materia: " . $e->getMessage());
             throw $e;
         }
+    }
+
+    // Asegurar que estos métodos devuelven valores correctos
+    public function contarEstudiantes() {
+        $sql = "SELECT COUNT(DISTINCT estudiante_id) as total FROM estudiante_grupo";
+        $result = $this->conn->query($sql);
+        $row = $result->fetch_assoc();
+        return $row['total'];
+    }
+    
+    public function contarProfesores() {
+        $sql = "SELECT COUNT(DISTINCT profesor_id) as total FROM profesor_grupo WHERE activo = 1";
+        $result = $this->conn->query($sql);
+        $row = $result->fetch_assoc();
+        return $row['total'];
+    }
+    
+    public function contarMaterias() {
+        $sql = "SELECT COUNT(DISTINCT materia_id) as total FROM grupo_materia WHERE activo = 1";
+        $result = $this->conn->query($sql);
+        $row = $result->fetch_assoc();
+        return $row['total'];
     }
 }
