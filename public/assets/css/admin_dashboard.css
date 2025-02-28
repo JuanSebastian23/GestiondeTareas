@@ -3,6 +3,7 @@
     padding: 20px 0;
 }
 
+/* Estilos para los iconos y cajas de estadísticas */
 .icon-box {
     width: 48px;
     height: 48px;
@@ -11,6 +12,11 @@
     justify-content: center;
     border-radius: 10px;
     flex-shrink: 0; /* Evita que el icono se encoja */
+    transition: transform 0.3s ease;
+}
+
+.card:hover .icon-box {
+    transform: scale(1.1);
 }
 
 .hover-effect {
@@ -176,4 +182,55 @@
     display: flex;
     justify-content: space-between;
     margin-top: 0.25rem;
+}
+
+/* Estilos para las tablas */
+.table-hover tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+/* Estilos para la paginación */
+.pagination .page-link {
+    color: #0d6efd;
+    border-radius: 4px;
+    margin: 0 2px;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* Estilos para tarjetas con estadísticas de usuarios */
+.user-stats-card {
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.user-stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* Animaciones para elementos AOS */
+[data-aos] {
+    pointer-events: none;
+}
+
+[data-aos].animated {
+    pointer-events: auto;
+}
+
+/* Estilos específicos para formularios en modales */
+.modal .form-control:focus, 
+.modal .form-select:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    border-color: #0d6efd;
+}
+
+/* Estilos para los botones de acción en tablas */
+.btn-group-sm > .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.2rem;
 }

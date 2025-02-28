@@ -3,6 +3,7 @@
     padding: 20px 0;
 }
 
+/* Estilos para las tarjetas de estadísticas */
 .icon-box {
     width: 48px;
     height: 48px;
@@ -11,6 +12,11 @@
     justify-content: center;
     border-radius: 10px;
     flex-shrink: 0; /* Evita que el icono se encoja */
+    transition: transform 0.3s ease;
+}
+
+.card:hover .icon-box {
+    transform: scale(1.1);
 }
 
 .hover-effect {
@@ -20,6 +26,35 @@
 .hover-effect:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para las tablas */
+.table-hover tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+/* Estilo mejorado para badges */
+.badge {
+    font-weight: 500;
+    padding: 0.5em 0.75em;
+}
+
+/* Estilo para los indicadores de estado en las tablas */
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+}
+
+/* Personalización de los formularios */
+.form-control:focus, .form-select:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+}
+
+.input-group-text {
+    transition: all 0.2s ease;
 }
 
 /* Estilos para las tarjetas estadísticas */
@@ -96,6 +131,10 @@
     .stats-badges-container .badge:last-child {
         margin-bottom: 0;
     }
+
+    .card-stats {
+        margin-bottom: 1.5rem;
+    }
 }
 
 /* Ajustes para la visualización en dispositivos móviles */
@@ -118,6 +157,10 @@
         padding: 0.35rem 0.75rem;
         font-size: 0.75rem;
     }
+
+    .display-5 {
+        font-size: 1.8rem !important;
+    }
 }
 
 /* Ajuste para dispositivos muy pequeños */
@@ -136,4 +179,146 @@
     .stats-badges-container .badge:last-child {
         margin-bottom: 0;
     }
+}
+
+/* Animaciones para elementos AOS */
+[data-aos] {
+    pointer-events: none;
+}
+[data-aos].animated {
+    pointer-events: auto;
+}
+
+/* Estilos para las listas de tareas */
+.list-group-item {
+    transition: background-color 0.2s ease;
+}
+
+.list-group-item:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Estilo para los tooltips */
+.tooltip .tooltip-inner {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Estilos para la paginación */
+.pagination .page-link {
+    color: #0d6efd;
+    border-radius: 4px;
+    margin: 0 2px;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* Mejora visual para los campos de búsqueda */
+.search-control {
+    border-radius: 20px;
+    padding-left: 2.5rem;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: 12px center;
+    background-size: 14px;
+}
+
+/* Estilos para las tareas próximas */
+.tareas-proximas .list-group-item {
+    border-left: none;
+    border-right: none;
+    transition: background-color 0.2s ease;
+}
+
+.tareas-proximas .list-group-item:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Estilos para los botones de acción */
+.btn-action {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-action:hover {
+    transform: translateY(-2px);
+}
+
+/* Personalización de los modales */
+.modal-content {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+/* Estilos para los selectores de fecha y hora */
+input[type="datetime-local"] {
+    background-clip: padding-box;
+}
+
+/* Estilos para tooltips */
+.tooltip .tooltip-inner {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    padding: 8px 12px;
+}
+
+/* Estilos para notificaciones */
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 10px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: #dc3545;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Personalización de las sombras */
+.shadow-custom {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para la visualización de comentarios */
+.comentario-box {
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-left: 4px solid #0d6efd;
+}
+
+/* Estilos para las barras de progreso */
+.progress {
+    overflow: hidden;
+    height: 8px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+}
+
+/* Personalización de los colores de tema */
+:root {
+    --primary-color: #0d6efd;
+    --success-color: #198754;
+    --info-color: #0dcaf0;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
 }

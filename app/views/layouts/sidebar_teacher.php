@@ -33,12 +33,6 @@ if (!defined('ROOT_PATH')) {
                         <span>Notificaciones</span>
                     </a>
                 </li>
-                <li>
-                    <a class="d-flex align-items-center" href="<?= BASE_URL ?>?page=reports&role=teacher">
-                        <i class="fa-solid fa-chart-line fa-fw"></i>
-                        <span>Reportes</span>
-                    </a>
-                </li>
             </ul>
         </div>
         <div class="log-out">
