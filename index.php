@@ -76,6 +76,16 @@ $currentUser = $auth->getCurrentUser();
 
             switch($page) {
                 // Vistas de Profesor
+                case 'dashboard':
+                    if ($_SESSION['rol'] === 'administrador') {
+                        require_once(VIEWS_PATH . '/admin/dashboard.php');
+                    } elseif ($_SESSION['rol'] === 'profesor') {
+                        require_once(VIEWS_PATH . '/teacher/dashboard.php');
+                    } else {
+                        // Mensaje de bienvenida para estudiantes
+                        echo "<h1 class='position-relative header-page'>BIENVENIDO AL SISTEMA INTERACTIVO PARA ESTUDIANTES DEL COLEGIO SAN FRANCISCO DE ASÍS</h1>";
+                    }
+                    break;
                 case 'task_management':
                     require_once(VIEWS_PATH . '/teacher/task_management.php');
                     break;
@@ -129,7 +139,8 @@ $currentUser = $auth->getCurrentUser();
                     $welcomeMessage = match($_SESSION['rol']) {
                         'estudiante' => 'BIENVENIDO AL SISTEMA INTERACTIVO PARA ESTUDIANTES',
                         'administrador' => 'BIENVENIDO AL PANEL DE ADMINISTRACIÓN',
-                        default => 'BIENVENIDO AL SISTEMA INTERACTIVO PARA PROFESORES'
+                        'profesor' => 'BIENVENIDO AL SISTEMA INTERACTIVO PARA PROFESORES',
+                        default => 'BIENVENIDO AL SISTEMA'
                     };
                     echo "<h1 class='position-relative header-page'>$welcomeMessage DEL COLEGIO SAN FRANCISCO DE ASÍS</h1>";
                     break;
