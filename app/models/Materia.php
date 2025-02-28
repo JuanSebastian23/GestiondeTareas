@@ -161,4 +161,18 @@ class Materia {
         $row = $result->fetch_assoc();
         return $row['total'];
     }
+
+    public function obtenerMateriasPorProfesor($profesorId) {
+        $sql = "SELECT DISTINCT m.* 
+                FROM materias m
+                INNER JOIN grupo_materia gm ON m.id = gm.materia_id
+                WHERE gm.profesor_id = ? AND m.activo = 1
+                ORDER BY m.nombre";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $profesorId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
 }

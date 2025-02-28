@@ -264,4 +264,19 @@ class Grupo {
         $row = $result->fetch_assoc();
         return $row['total'];
     }
+
+    public function obtenerGruposPorProfesor($profesorId) {
+        $sql = "SELECT g.* 
+                FROM grupos g
+                INNER JOIN profesor_grupo pg ON g.id = pg.grupo_id
+                WHERE pg.profesor_id = ? AND g.activo = 1
+                ORDER BY g.nombre";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $profesorId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
 }

@@ -1,8 +1,8 @@
 <?php
 if (!defined('ROOT_PATH')) {
     require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/config/dirs.php');
-    require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/models/MateriaModel.php');
 }
+
 require_once(MODELS_PATH . '/Materia.php');
 
 class MateriaController {
@@ -52,6 +52,15 @@ class MateriaController {
             return $this->modelo->obtenerGrupos($materia_id);
         } catch (Exception $e) {
             return ['error' => $e->getMessage()];
+        }
+    }
+
+    public function obtenerMateriasPorProfesor($profesorId) {
+        try {
+            return $this->modelo->obtenerMateriasPorProfesor($profesorId);
+        } catch (Exception $e) {
+            error_log("Error obteniendo materias por profesor: " . $e->getMessage());
+            return [];
         }
     }
 

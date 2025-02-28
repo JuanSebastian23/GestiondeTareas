@@ -27,6 +27,15 @@ class GrupoController {
         }
     }
 
+    public function obtenerGruposPorProfesor($profesorId) {
+        try {
+            return $this->modelo->obtenerGruposPorProfesor($profesorId);
+        } catch (Exception $e) {
+            error_log("Error obteniendo grupos por profesor: " . $e->getMessage());
+            return [];
+        }
+    }
+
     public function procesarAccion() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') return null;
 
