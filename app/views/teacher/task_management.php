@@ -314,7 +314,6 @@ foreach ($tareas as $tarea) {
                                                 <th>Fecha Creación</th>
                                                 <th>Fecha Entrega</th>
                                                 <th>Estado</th>
-                                                <th class="text-center">Acciones</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -362,24 +361,11 @@ foreach ($tareas as $tarea) {
                                                                 <?= ucfirst(htmlspecialchars($tarea['estado_nombre'])) ?>
                                                             </span>
                                                         </td>
-                                                        <td class="text-center">
-                                                            <div class="btn-group btn-group-sm">
-                                                                <button type="button" class="btn btn-outline-info" data-bs-toggle="tooltip" title="Ver detalles">
-                                                                    <i class="fas fa-eye"></i>
-                                                                </button>
-                                                                <button type="button" class="btn btn-outline-warning" data-bs-toggle="tooltip" title="Editar">
-                                                                    <i class="fas fa-edit"></i>
-                                                                </button>
-                                                                <button type="button" class="btn btn-outline-danger" data-bs-toggle="tooltip" title="Eliminar">
-                                                                    <i class="fas fa-trash-alt"></i>
-                                                                </button>
-                                                            </div>
-                                                        </td>
                                                     </tr>
                                                 <?php endforeach; ?>
                                             <?php else: ?>
                                                 <tr>
-                                                    <td colspan="7" class="text-center py-5">
+                                                    <td colspan="6" class="text-center py-5">
                                                         <i class="fas fa-tasks text-muted fa-3x mb-3"></i>
                                                         <h5 class="text-muted">No hay tareas registradas</h5>
                                                         <p class="text-muted small">Crea tu primera tarea usando el formulario</p>
