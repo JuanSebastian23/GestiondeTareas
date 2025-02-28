@@ -1,0 +1,236 @@
+/* Estilos para el dashboard */
+.dashboard-page {
+    padding: 20px 0;
+}
+
+/* Estilos para los iconos y cajas de estadísticas */
+.icon-box {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    flex-shrink: 0; /* Evita que el icono se encoja */
+    transition: transform 0.3s ease;
+}
+
+.card:hover .icon-box {
+    transform: scale(1.1);
+}
+
+.hover-effect {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-effect:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos específicos para el dashboard de administración */
+
+/* Estilos para las tarjetas estadísticas */
+.card-stats {
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.card-stats:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Ajustes para estadísticas en tarjetas */
+.stats-number {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    line-height: 1.2;
+}
+
+.badge-stat {
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-weight: 500;
+    white-space: nowrap; /* Evita que se rompa en varias líneas */
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.8rem;
+}
+
+/* Estilo para los gráficos */
+#usersChartContainer {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+/* Personalización de los SVG circulares */
+.circle-chart svg {
+    transform: rotate(-90deg);
+}
+
+.circle-chart .circle-bg {
+    fill: none;
+    stroke: #e9ecef;
+    stroke-width: 12;
+}
+
+.circle-chart .circle-progress {
+    fill: none;
+    stroke-linecap: round;
+    stroke-width: 12;
+}
+
+/* Contenedor de tarjetas de resumen */
+.stat-cards-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -0.75rem;
+    margin-left: -0.75rem;
+}
+
+.stat-card-col {
+    flex: 0 0 auto;
+    width: 25%;
+    padding-right: 0.75rem;
+    padding-left: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Ajustes responsive para pantallas medianas */
+@media (max-width: 991.98px) {
+    .stat-card-col {
+        width: 50%;
+    }
+    
+    .stats-badges-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .stats-badges-container .badge {
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .stats-badges-container .badge:last-child {
+        margin-bottom: 0;
+    }
+}
+
+/* Ajustes para la visualización en dispositivos móviles */
+@media (max-width: 767.98px) {
+    .icon-box {
+        width: 40px;
+        height: 40px;
+        font-size: 0.9rem;
+    }
+    
+    .card-title {
+        font-size: 1rem;
+    }
+    
+    h2.stats-number {
+        font-size: 1.5rem;
+    }
+    
+    .badge-stat {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.75rem;
+    }
+    
+    .stat-card-col {
+        width: 100%;
+    }
+    
+    .stats-badges-container {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+    }
+}
+
+/* Ajuste para dispositivos muy pequeños */
+@media (max-width: 399.98px) {
+    .stats-badges-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .stats-badges-container .badge {
+        margin-bottom: 0.5rem;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .stats-badges-container .badge:last-child {
+        margin-bottom: 0;
+    }
+}
+
+/* Clases para mejorar la visibilidad del texto */
+.progress-percentage {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.25rem;
+}
+
+/* Estilos para las tablas */
+.table-hover tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+/* Estilos para la paginación */
+.pagination .page-link {
+    color: #0d6efd;
+    border-radius: 4px;
+    margin: 0 2px;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* Estilos para tarjetas con estadísticas de usuarios */
+.user-stats-card {
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.user-stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* Animaciones para elementos AOS */
+[data-aos] {
+    pointer-events: none;
+}
+
+[data-aos].animated {
+    pointer-events: auto;
+}
+
+/* Estilos específicos para formularios en modales */
+.modal .form-control:focus, 
+.modal .form-select:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    border-color: #0d6efd;
+}
+
+/* Estilos para los botones de acción en tablas */
+.btn-group-sm > .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.2rem;
+}

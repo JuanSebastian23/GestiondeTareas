@@ -15,6 +15,10 @@ if (empty($tareas)) {
     echo "<tr><td colspan='7'>No hay tareas que coincidan con los filtros.</td></tr>";
 } else {
     foreach ($tareas as $tarea) {
+        // Convertimos el estado a minúsculas y eliminamos espacios extra
+        $estado_tarea = strtolower(trim($tarea['estado_nombre']));
+        $estados_excluidos = ['completada', 'vencida', 'calificada'];
+
         echo "<tr>
                 <td>" . htmlspecialchars($tarea['titulo']) . "</td>
                 <td>" . htmlspecialchars($tarea['materia_nombre']) . "</td>
@@ -22,8 +26,22 @@ if (empty($tareas)) {
                 <td>" . htmlspecialchars($tarea['fecha_entrega']) . "</td>
                 <td>" . htmlspecialchars($tarea['grupo_nombre']) . "</td>
                 <td>" . htmlspecialchars($tarea['estado_nombre']) . "</td>
-                <td><button class='btn btn-sm btn-primary'>Ver</button></td>
-              </tr>";
+                <td>";
+
+        // Solo mostramos el botón "Ver" si el estado NO está en la lista de excluidos
+        if ($tarea['estado_nombre'] !== 'completada' && $tarea['estado_nombre'] !== 'vencida' && $tarea['estado_nombre'] !== 'calificada'): ?>
+            "<button class="btn btn-sm btn-primary btn-ver-tarea" data-id="<?= $tarea['id'] ?>" data-bs-toggle="modal" data-bs-target="#modalSubirTarea">
+    Ver
+</button>";
+        <?php endif; ?>
+        </td>   
+        </tr>
+        <?php
+    }
+}
+?>
+  
+        echo "</td></tr>";
     }
 }
 ?>

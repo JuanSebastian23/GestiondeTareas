@@ -10,6 +10,12 @@ if (!defined('ROOT_PATH')) {
         <div class="links">
             <ul>
                 <li>
+                    <a class="d-flex align-items-center" href="<?= BASE_URL ?>?page=dashboard&role=teacher">
+                        <i class="fa-solid fa-gauge-high fa-fw"></i>
+                        <span>Panel Principal</span>
+                    </a>
+                </li>
+                <li>
                     <a class="d-flex align-items-center" href="<?= BASE_URL ?>?page=task_management&role=teacher">
                         <i class="fa-solid fa-tasks fa-fw"></i>
                         <span>Gestión de Tareas</span>

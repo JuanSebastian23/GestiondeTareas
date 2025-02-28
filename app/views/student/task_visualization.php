@@ -20,53 +20,83 @@ $estados = $estadoController->obtenerEstados();
 ?>
 
 <h1 class="position-relative header-page">Mis Tareas</h1>
-<div class="dashboard-page">
-    <div class="wrapper">
+<div class="container mt-4">
+    <div class="row">
         <!-- Contador de Tareas -->
-        <div class="statistics mega" data-aos="fade-up">
-            <div>
-                <h2 class="section-header">Estado de Mis Tareas</h2>
-                <span class="section-des">Resumen de tareas asignadas</span>
-            </div>
-            <div class="row">
-                <div class="col-lg-4 col-md-6 box text-center">
-                    <i class="fa-solid fa-spinner c-orange"></i>
-                    <span class="d-block">0</span> En Progreso
-                </div>
-                <div class="col-lg-4 col-md-6 box text-center">
-                    <i class="fa-regular fa-circle-check c-green"></i>
-                    <span class="d-block">0</span> Completadas
-                </div>
-                <div class="col-lg-4 col-md-6 box text-center">
-                    <i class="far fa-times-circle c-red"></i>
-                    <span class="d-block">0</span> Vencida
-                </div>
-</div>
-
-        </div>
-        <!-- Listado de Tareas -->
-        <div class="table mega" data-aos="fade-up">
-            <div>
-                <h2 class="section-header">Todas mis Tareas</h2>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="section-des">Lista completa de tareas asignadas</span>
-                    <div class="filters">
-                        <select id="filter-materia" class="form-select form-select-sm d-inline-block w-auto me-2">
-                            <option value="">Todas las Materias</option>
-                            <option value="Ciencias">Ciencias</option>
-                        </select>
-                        <select id="filter-estado" class="form-select form-select-sm d-inline-block w-auto">
-                            <option value="">Todos los Estados</option>
-                            <option value="Pendiente">Pendiente</option>
-                            <option value="En Progreso">En Progreso</option>
-                            <option value="Completada">Completada</option>
-                            <option value="Completada">Vencida</option>
-                        </select>
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Estado de Mis Tareas</h2>
+                    <p class="card-text">Resumen de tareas asignadas</p>
+                    <div class="row text-center">
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body">
+                                    <i class="fa-solid fa-spinner text-warning"></i>
+                                    <h5 class="card-title">En Progreso</h5>
+                                    <p class="card-text"><span>0</span></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card border-success">
+                                <div class="card-body">
+                                    <i class="fa-regular fa-circle-check text-success"></i>
+                                    <h5 class="card-title">Completadas</h5>
+                                    <p class="card-text"><span>0</span></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card border-danger">
+                                <div class="card-body">
+                                    <i class="far fa-times-circle text-danger"></i>
+                                    <h5 class="card-title">Vencida</h5>
+                                    <p class="card-text"><span>0</span></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card border-primary">
+                                <div class="card-body">
+                                    <i class="far fa-times-circle text-primary"></i>
+                                    <h5 class="card-title">Calificada</h5>
+                                    <p class="card-text"><span>0</span></p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="responsive-table">
-                <table>
+        </div>
+
+        <!-- Listado de Tareas -->
+<div class="col-12 mb-4">
+    <div class="card">
+        <div class="card-body">
+            <h2 class="card-title">Todas mis Tareas</h2>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <p class="card-text">Lista completa de tareas asignadas</p>
+                <div class="d-flex">
+                    <select id="filter-materia" class="form-select form-select-sm me-2">
+                        <option value="">Todas las Materias</option>
+                        <?php foreach ($materias as $materia): ?>
+                            <option value="<?= htmlspecialchars($materia['nombre']) ?>">
+                                <?= htmlspecialchars($materia['nombre']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <select id="filter-estado" class="form-select form-select-sm">
+                        <option value="">Todos los Estados</option>
+                        <option value="En Progreso">En Progreso</option>
+                        <option value="Completada">Completada</option>
+                        <option value="Vencida">Vencida</option>
+                        <option value="Vencida">Calificada</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped">
                     <thead>
                         <tr>
                             <th>Tarea</th>
@@ -84,96 +114,73 @@ $estados = $estadoController->obtenerEstados();
                 </table>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Modal para subir tarea -->
+<div class="modal fade" id="modalSubirTarea" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel">Subir Tarea</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formSubirTarea" enctype="multipart/form-data">
+                    <input type="hidden" name="tarea_id" id="modalTareaId">
+
+                    <div class="mb-3">
+                        <label for="comentarios" class="form-label">Comentarios:</label>
+                        <textarea name="comentarios" id="comentarios" class="form-control"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="archivo" class="form-label">Subir archivo:</label>
+                        <input type="file" name="archivo" id="archivo" class="form-control">
+                    </div>
+
+                    <button type="submit" class="btn btn-success">Entregar Tarea</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
         <!-- Tareas Próximas -->
-        <div class="tasks mega" data-aos="fade-up">
-            <div>
-                <h2 class="section-header">Tareas Próximas a Vencer</h2>
-                <span class="section-des">Tareas con fecha límite cercana</span>
-            </div>
-            <div class="data">
-                <div class="d-flex align-items-center item">
-                    <div class="info">
-                        <h3>Proyecto de Matemáticas</h3>
-                        <p>Entrega: Mañana - 8:00 AM</p>
-                    </div>
-                    <div>
-                        <span class="label bg-orange">Pendiente</span>
-                        <button class="btn btn-sm btn-primary ms-2">Ver Detalles</button>
-                    </div>
-                </div>
-                <div class="d-flex align-items-center item">
-                    <div class="info">
-                        <h3>Ensayo de Literatura</h3>
-                        <p>Entrega: En 2 días</p>
-                    </div>
-                    <div>
-                        <span class="label bg-blue">En Progreso</span>
-                        <button class="btn btn-sm btn-primary ms-2">Ver Detalles</button>
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Tareas Próximas a Vencer</h2>
+                    <p class="card-text">Tareas con fecha límite cercana</p>
+                    <div class="list-group">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">Proyecto de Matemáticas</h5>
+                                <small>Entrega: Mañana - 8:00 AM</small>
+                            </div>
+                            <div>
+                                <span class="badge bg-warning">Pendiente</span>
+                                <button class="btn btn-sm btn-primary ms-2">Ver Detalles</button>
+                            </div>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">Ensayo de Literatura</h5>
+                                <small>Entrega: En 2 días</small>
+                            </div>
+                            <div>
+                                <span class="badge bg-primary">En Progreso</span>
+                                <button class="btn btn-sm btn-primary ms-2">Ver Detalles</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 
-<!-- Script para actualizar contadores -->
-<script>
-    function actualizarContadorTareas() {
-    fetch('http://localhost/GestiondeTareas/app/views/student/contar_tareas.php')
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                console.error(data.error);
-                return;
-            }
-            
-            // Actualizar los contadores en la página
-            document.querySelector(".c-orange + span").textContent = data.Pendiente || 0;
-            document.querySelector(".c-blue + span").textContent = data["En Progreso"] || 0;
-            document.querySelector(".c-green + span").textContent = data.Completadas || 0;
-            document.querySelector(".c-red + span").textContent = data.Vencida || 0;
-        })
-        .catch(error => console.error("Error al obtener tareas:", error));
-}
-
-// Ejecutar la función cada 5 segundos para actualizar en tiempo real
-document.addEventListener('DOMContentLoaded', () => {
-    actualizarContadorTareas();
-    setInterval(actualizarContadorTareas, 5000); // Actualiza cada 5 segundos
-});
-</script>
-
-
-<!-- Script para cargar tareas con AJAX -->
-<script>
-    function cargarTareas(filtrar = false) {
-        let materia = document.getElementById("filter-materia").value;
-        let estado = document.getElementById("filter-estado").value;
-
-        let url = filtrar 
-            ? `http://localhost/GestiondeTareas/app/views/student/filtrar_tareas.php?materia=${materia}&estado=${estado}`
-            : `http://localhost/GestiondeTareas/app/views/student/listar_tareas.php`;
-
-        fetch(url)
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('tareas-list').innerHTML = data;
-                actualizarContadorTareas(); // Actualizar contadores después de cargar tareas
-            })
-            .catch(error => console.error('Error cargando tareas:', error));
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        cargarTareas();
-
-        document.getElementById("filter-materia").addEventListener("change", function() {
-            cargarTareas(true);
-        });
-
-        document.getElementById("filter-estado").addEventListener("change", function() {
-            cargarTareas(true);
-        });
-    });
-</script>
+<script src="<?= BASE_URL ?>/public/assets/js/Tareas.js"></script>
+<script src="public\assets\js\Modal_tarea.js"></script>

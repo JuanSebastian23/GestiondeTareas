@@ -1,39 +1,66 @@
 <?php
 if (!defined('ROOT_PATH')) {
     require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/config/dirs.php');
-    require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/models/MateriaModel.php');
 }
+
 require_once(MODELS_PATH . '/Materia.php');
 
 class MateriaController {
-    private $materiaModel;
+    private $modelo;
 
     public function __construct() {
-        $this->materiaModel = new Materia();
+        $this->modelo = new Materia();
     }
 
     public function obtenerEstadisticas() {
-        return [
-            'total_materias' => $this->materiaModel->contarMaterias(true),
-            'total_grupos' => $this->materiaModel->contarGruposAsignados(),
-            'total_profesores' => $this->materiaModel->contarProfesoresAsignados(),
-            'total_tareas' => $this->materiaModel->contarTareasAsignadas()
-        ];
+        $stats = [];
+        
+        // Obtener todas las materias
+        $materias = $this->modelo->obtenerTodas();
+        
+        // Contar total de materias
+        $stats['total_materias'] = count($materias);
+        
+        // Contar materias activas
+        $materiasActivas = array_filter($materias, function($materia) {
+            return $materia['activo'] == 1;
+        });
+        $stats['materias_activas'] = count($materiasActivas);
+        
+        // Obtener total de grupos con materias asignadas
+        $stats['total_grupos'] = $this->modelo->contarGruposConMaterias();
+        
+        // Obtener profesores asignados a materias
+        $stats['total_profesores'] = $this->modelo->contarProfesoresConMaterias();
+        
+        // Obtener tareas asignadas a materias
+        $stats['total_tareas'] = $this->modelo->contarTareas();
+        
+        return $stats;
     }
 
     public function obtenerTodas() {
-        return $this->materiaModel->obtenerTodas();
+        return $this->modelo->obtenerTodas();
     }
 
     public function obtenerPorId($id) {
-        return $this->materiaModel->obtenerPorId($id);
+        return $this->modelo->obtenerPorId($id);
     }
 
     public function obtenerGrupos($materia_id) {
         try {
-            return $this->materiaModel->obtenerGrupos($materia_id);
+            return $this->modelo->obtenerGrupos($materia_id);
         } catch (Exception $e) {
             return ['error' => $e->getMessage()];
+        }
+    }
+
+    public function obtenerMateriasPorProfesor($profesorId) {
+        try {
+            return $this->modelo->obtenerMateriasPorProfesor($profesorId);
+        } catch (Exception $e) {
+            error_log("Error obteniendo materias por profesor: " . $e->getMessage());
+            return [];
         }
     }
 
@@ -59,7 +86,7 @@ class MateriaController {
             return ['error' => 'El nombre y código son obligatorios'];
         }
 
-        $resultado = $this->materiaModel->crear([
+        $resultado = $this->modelo->crear([
             'nombre' => $datos['nombre'],
             'codigo' => $datos['codigo'],
             'descripcion' => $datos['descripcion'] ?? ''
@@ -76,7 +103,7 @@ class MateriaController {
             return ['error' => 'El nombre y código son obligatorios'];
         }
 
-        $resultado = $this->materiaModel->actualizar([
+        $resultado = $this->modelo->actualizar([
             'id' => (int)$datos['id'],
             'nombre' => $datos['nombre'],
             'codigo' => $datos['codigo'],
@@ -94,7 +121,7 @@ class MateriaController {
             return ['error' => 'Datos incompletos'];
         }
 
-        $resultado = $this->materiaModel->cambiarEstado(
+        $resultado = $this->modelo->cambiarEstado(
             (int)$datos['id'],
             (bool)$datos['activo']
         );

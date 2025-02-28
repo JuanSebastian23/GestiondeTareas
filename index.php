@@ -42,6 +42,7 @@ $currentUser = $auth->getCurrentUser();
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-bootstrap-4/bootstrap-4.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </head>
 
 <body>
@@ -76,6 +77,16 @@ $currentUser = $auth->getCurrentUser();
 
             switch($page) {
                 // Vistas de Profesor
+                case 'dashboard':
+                    if ($_SESSION['rol'] === 'administrador') {
+                        require_once(VIEWS_PATH . '/admin/dashboard.php');
+                    } elseif ($_SESSION['rol'] === 'profesor') {
+                        require_once(VIEWS_PATH . '/teacher/dashboard.php');
+                    } else {
+                        // Mensaje de bienvenida para estudiantes
+                        echo "<h1 class='position-relative header-page'>BIENVENIDO AL SISTEMA INTERACTIVO PARA ESTUDIANTES DEL COLEGIO SAN FRANCISCO DE ASÍS</h1>";
+                    }
+                    break;
                 case 'task_management':
                     require_once(VIEWS_PATH . '/teacher/task_management.php');
                     break;
@@ -119,12 +130,18 @@ $currentUser = $auth->getCurrentUser();
                 case 'system_reports':
                     require_once(VIEWS_PATH . '/admin/system_reports.php');
                     break;
+                case 'dashboard':
+                    if ($_SESSION['rol'] === 'administrador') {
+                        require_once(VIEWS_PATH . '/admin/dashboard.php');
+                    }
+                    break;
                 
                 default:
                     $welcomeMessage = match($_SESSION['rol']) {
                         'estudiante' => 'BIENVENIDO AL SISTEMA INTERACTIVO PARA ESTUDIANTES',
                         'administrador' => 'BIENVENIDO AL PANEL DE ADMINISTRACIÓN',
-                        default => 'BIENVENIDO AL SISTEMA INTERACTIVO PARA PROFESORES'
+                        'profesor' => 'BIENVENIDO AL SISTEMA INTERACTIVO PARA PROFESORES',
+                        default => 'BIENVENIDO AL SISTEMA'
                     };
                     echo "<h1 class='position-relative header-page'>$welcomeMessage DEL COLEGIO SAN FRANCISCO DE ASÍS</h1>";
                     break;
@@ -141,6 +158,7 @@ $currentUser = $auth->getCurrentUser();
     <script src="<?= BASE_URL ?>/public/assets/js/main.js"></script>
     <script src="<?= BASE_URL ?>/public/assets/js/aos.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.js"></script>
+
     <script>
         // Inicializar todos los tooltips y popovers de Bootstrap
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));

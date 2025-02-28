@@ -9,7 +9,7 @@ class EstadoController {
     }
 
     public function obtenerEstados() {
-        return $this->estadoModel->getEstadosDisponibles();
+        return $this->estadoModel->obtenerTodos();
     }
 }
 ?>
