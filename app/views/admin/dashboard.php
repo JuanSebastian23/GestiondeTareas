@@ -43,9 +43,10 @@ $statsMaterias = [
     </div>
 
     <!-- Tarjetas Estadísticas Principales -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100 card-stats">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-3 mb-4">
+        <!-- Tarjeta de Usuarios Totales -->
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
                         <div class="icon-box bg-primary bg-opacity-10 text-primary rounded-3 me-3">
@@ -53,9 +54,9 @@ $statsMaterias = [
                         </div>
                         <h5 class="card-title mb-0">Usuarios</h5>
                     </div>
-                    <h2 class="mb-2 stats-number"><?= $statsUsuarios['total'] ?></h2>
-                    <div class="d-flex align-items-center justify-content-between">
-                        <span class="badge bg-success rounded-pill badge-stat">
+                    <h2 class="stats-number mb-2"><?= $statsUsuarios['total'] ?></h2>
+                    <div class="d-flex flex-wrap stats-badges-container">
+                        <span class="badge bg-success rounded-pill badge-stat me-2 mb-2 mb-md-0">
                             <i class="fas fa-user-check me-1"></i><?= $statsUsuarios['activos'] ?> activos
                         </span>
                         <span class="badge bg-danger rounded-pill badge-stat">
@@ -70,8 +71,10 @@ $statsMaterias = [
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
+
+        <!-- Tarjeta de Estudiantes -->
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
                         <div class="icon-box bg-success bg-opacity-10 text-success rounded-3 me-3">
@@ -79,13 +82,16 @@ $statsMaterias = [
                         </div>
                         <h5 class="card-title mb-0">Estudiantes</h5>
                     </div>
-                    <h2 class="mb-2"><?= $statsUsuarios['estudiantes'] ?></h2>
-                    <div class="progress" style="height: 6px;">
+                    <h2 class="stats-number mb-2"><?= $statsUsuarios['estudiantes'] ?></h2>
+                    <div class="progress" style="height: 8px;">
                         <?php $porcentaje = ($statsUsuarios['estudiantes'] / $statsUsuarios['total']) * 100; ?>
                         <div class="progress-bar bg-success" style="width: <?= $porcentaje ?>%" 
                              aria-valuenow="<?= $porcentaje ?>" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
-                    <small class="text-muted"><?= number_format($porcentaje, 1) ?>% del total de usuarios</small>
+                    <div class="progress-label">
+                        <small class="text-muted">Proporción de usuarios</small>
+                        <small class="progress-percentage text-success"><?= number_format($porcentaje, 1) ?>%</small>
+                    </div>
                 </div>
                 <div class="card-footer bg-transparent border-0 pt-0">
                     <a href="<?= BASE_URL ?>?page=user_management&role=admin&filter=estudiante" class="btn btn-sm btn-light w-100">
@@ -94,8 +100,10 @@ $statsMaterias = [
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
+
+        <!-- Tarjeta de Profesores -->
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
                         <div class="icon-box bg-warning bg-opacity-10 text-warning rounded-3 me-3">
@@ -103,13 +111,16 @@ $statsMaterias = [
                         </div>
                         <h5 class="card-title mb-0">Profesores</h5>
                     </div>
-                    <h2 class="mb-2"><?= $statsUsuarios['profesores'] ?></h2>
-                    <div class="progress" style="height: 6px;">
+                    <h2 class="stats-number mb-2"><?= $statsUsuarios['profesores'] ?></h2>
+                    <div class="progress" style="height: 8px;">
                         <?php $porcentaje = ($statsUsuarios['profesores'] / $statsUsuarios['total']) * 100; ?>
                         <div class="progress-bar bg-warning" style="width: <?= $porcentaje ?>%" 
                              aria-valuenow="<?= $porcentaje ?>" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
-                    <small class="text-muted"><?= number_format($porcentaje, 1) ?>% del total de usuarios</small>
+                    <div class="progress-label">
+                        <small class="text-muted">Proporción de usuarios</small>
+                        <small class="progress-percentage text-warning"><?= number_format($porcentaje, 1) ?>%</small>
+                    </div>
                 </div>
                 <div class="card-footer bg-transparent border-0 pt-0">
                     <a href="<?= BASE_URL ?>?page=user_management&role=admin&filter=profesor" class="btn btn-sm btn-light w-100">
@@ -118,8 +129,10 @@ $statsMaterias = [
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
+
+        <!-- Tarjeta de Administradores -->
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
                         <div class="icon-box bg-info bg-opacity-10 text-info rounded-3 me-3">
@@ -127,13 +140,16 @@ $statsMaterias = [
                         </div>
                         <h5 class="card-title mb-0">Administradores</h5>
                     </div>
-                    <h2 class="mb-2"><?= $statsUsuarios['admins'] ?></h2>
-                    <div class="progress" style="height: 6px;">
+                    <h2 class="stats-number mb-2"><?= $statsUsuarios['admins'] ?></h2>
+                    <div class="progress" style="height: 8px;">
                         <?php $porcentaje = ($statsUsuarios['admins'] / $statsUsuarios['total']) * 100; ?>
                         <div class="progress-bar bg-info" style="width: <?= $porcentaje ?>%" 
                              aria-valuenow="<?= $porcentaje ?>" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
-                    <small class="text-muted"><?= number_format($porcentaje, 1) ?>% del total de usuarios</small>
+                    <div class="progress-label">
+                        <small class="text-muted">Proporción de usuarios</small>
+                        <small class="progress-percentage text-info"><?= number_format($porcentaje, 1) ?>%</small>
+                    </div>
                 </div>
                 <div class="card-footer bg-transparent border-0 pt-0">
                     <a href="<?= BASE_URL ?>?page=user_management&role=admin&filter=administrador" class="btn btn-sm btn-light w-100">
@@ -145,9 +161,9 @@ $statsMaterias = [
     </div>
 
     <!-- Gráficos y Estadísticas -->
-    <div class="row mb-4 g-3">
+    <div class="row g-3 mb-4">
         <!-- Distribución de Usuarios -->
-        <div class="col-xl-6">
+        <div class="col-lg-6">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-transparent py-3">
                     <h5 class="mb-0 fw-semibold">Distribución de Usuarios</h5>
@@ -158,7 +174,7 @@ $statsMaterias = [
             </div>
         </div>
         <!-- Grupos y Materias -->
-        <div class="col-xl-6">
+        <div class="col-lg-6">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-transparent py-3">
                     <h5 class="mb-0 fw-semibold">Grupos y Materias</h5>
@@ -172,17 +188,18 @@ $statsMaterias = [
                                         <h5 class="mb-0">Grupos</h5>
                                         <span class="badge bg-primary rounded-pill"><?= $statsGrupos['total'] ?></span>
                                     </div>
-                                    <div class="d-flex align-items-end">
-                                        <div style="width: 120px; height: 120px;">
+                                    <div class="row">
+                                        <div class="col-sm-6 col-lg-12 col-xl-6">
                                             <!-- Circle Visualization -->
-                                            <div class="position-relative" style="width: 120px; height: 120px;">
-                                                <svg width="120" height="120" viewBox="0 0 120 120">
-                                                    <circle cx="60" cy="60" r="54" fill="none" stroke="#e9ecef" stroke-width="12"></circle>
+                                            <div class="position-relative circle-chart mb-3 mb-sm-0 mb-lg-3 mb-xl-0" style="width: 100%; max-width: 120px; margin: 0 auto;">
+                                                <svg width="100%" height="120" viewBox="0 0 120 120">
+                                                    <circle cx="60" cy="60" r="54" fill="none" stroke="#e9ecef" stroke-width="12" class="circle-bg"></circle>
                                                     <?php $ratio = $statsGrupos['activos'] / $statsGrupos['total']; ?>
                                                     <circle cx="60" cy="60" r="54" fill="none" stroke="#0d6efd" stroke-width="12"
                                                             stroke-dasharray="<?= 339.292 * $ratio ?> 339.292"
                                                             stroke-dashoffset="0" 
-                                                            transform="rotate(-90 60 60)"></circle>
+                                                            transform="rotate(-90 60 60)"
+                                                            class="circle-progress"></circle>
                                                 </svg>
                                                 <div class="position-absolute top-50 start-50 translate-middle text-center">
                                                     <h3 class="mb-0 fw-bold"><?= $statsGrupos['activos'] ?></h3>
@@ -190,13 +207,13 @@ $statsMaterias = [
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="ms-3">
+                                        <div class="col-sm-6 col-lg-12 col-xl-6 d-flex flex-column justify-content-center">
                                             <div class="mb-2">
-                                                <i class="fas fa-check-circle text-success"></i>
+                                                <i class="fas fa-check-circle text-success me-1"></i>
                                                 <span>Activos: <?= $statsGrupos['activos'] ?></span>
                                             </div>
                                             <div>
-                                                <i class="fas fa-times-circle text-danger"></i>
+                                                <i class="fas fa-times-circle text-danger me-1"></i>
                                                 <span>Inactivos: <?= $statsGrupos['total'] - $statsGrupos['activos'] ?></span>
                                             </div>
                                         </div>
@@ -216,17 +233,18 @@ $statsMaterias = [
                                         <h5 class="mb-0">Materias</h5>
                                         <span class="badge bg-success rounded-pill"><?= $statsMaterias['total'] ?></span>
                                     </div>
-                                    <div class="d-flex align-items-end">
-                                        <div style="width: 120px; height: 120px;">
+                                    <div class="row">
+                                        <div class="col-sm-6 col-lg-12 col-xl-6">
                                             <!-- Circle Visualization -->
-                                            <div class="position-relative" style="width: 120px; height: 120px;">
-                                                <svg width="120" height="120" viewBox="0 0 120 120">
-                                                    <circle cx="60" cy="60" r="54" fill="none" stroke="#e9ecef" stroke-width="12"></circle>
+                                            <div class="position-relative circle-chart mb-3 mb-sm-0 mb-lg-3 mb-xl-0" style="width: 100%; max-width: 120px; margin: 0 auto;">
+                                                <svg width="100%" height="120" viewBox="0 0 120 120">
+                                                    <circle cx="60" cy="60" r="54" fill="none" stroke="#e9ecef" stroke-width="12" class="circle-bg"></circle>
                                                     <?php $ratio = $statsMaterias['activas'] / $statsMaterias['total']; ?>
                                                     <circle cx="60" cy="60" r="54" fill="none" stroke="#198754" stroke-width="12"
                                                             stroke-dasharray="<?= 339.292 * $ratio ?> 339.292"
                                                             stroke-dashoffset="0" 
-                                                            transform="rotate(-90 60 60)"></circle>
+                                                            transform="rotate(-90 60 60)"
+                                                            class="circle-progress"></circle>
                                                 </svg>
                                                 <div class="position-absolute top-50 start-50 translate-middle text-center">
                                                     <h3 class="mb-0 fw-bold"><?= $statsMaterias['activas'] ?></h3>
@@ -234,13 +252,13 @@ $statsMaterias = [
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="ms-3">
+                                        <div class="col-sm-6 col-lg-12 col-xl-6 d-flex flex-column justify-content-center">
                                             <div class="mb-2">
-                                                <i class="fas fa-check-circle text-success"></i>
+                                                <i class="fas fa-check-circle text-success me-1"></i>
                                                 <span>Activas: <?= $statsMaterias['activas'] ?></span>
                                             </div>
                                             <div>
-                                                <i class="fas fa-times-circle text-danger"></i>
+                                                <i class="fas fa-times-circle text-danger me-1"></i>
                                                 <span>Inactivas: <?= $statsMaterias['total'] - $statsMaterias['activas'] ?></span>
                                             </div>
                                         </div>
@@ -267,8 +285,8 @@ $statsMaterias = [
                     <h5 class="mb-0 fw-semibold">Accesos Rápidos</h5>
                 </div>
                 <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-4">
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                        <div class="col">
                             <a href="<?= BASE_URL ?>?page=user_management&role=admin" class="card hover-effect text-decoration-none h-100">
                                 <div class="card-body d-flex align-items-center">
                                     <div class="icon-box bg-primary bg-opacity-10 text-primary me-3">
@@ -281,7 +299,7 @@ $statsMaterias = [
                                 </div>
                             </a>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col">
                             <a href="<?= BASE_URL ?>?page=group_management&role=admin" class="card hover-effect text-decoration-none h-100">
                                 <div class="card-body d-flex align-items-center">
                                     <div class="icon-box bg-success bg-opacity-10 text-success me-3">
@@ -294,7 +312,7 @@ $statsMaterias = [
                                 </div>
                             </a>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col">
                             <a href="<?= BASE_URL ?>?page=subject_management&role=admin" class="card hover-effect text-decoration-none h-100">
                                 <div class="card-body d-flex align-items-center">
                                     <div class="icon-box bg-info bg-opacity-10 text-info me-3">
@@ -313,25 +331,6 @@ $statsMaterias = [
         </div>
     </div>
 </div>
-
-<style>
-.icon-box {
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.hover-effect {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.hover-effect:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-}
-</style>
 
 <!-- Incluyo Chart.js para los gráficos -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
@@ -368,11 +367,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'bottom'
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            padding: 15,
+                            font: {
+                                size: 12
+                            }
+                        }
                     }
                 }
             }
         });
     }
+
+    // Asegurar que los gráficos se redimensionen cuando la ventana cambie de tamaño
+    window.addEventListener('resize', function() {
+        if (window.Chart && window.Chart.instances) {
+            for (let id in window.Chart.instances) {
+                window.Chart.instances[id].resize();
+            }
+        }
+    });
 });
 </script>
