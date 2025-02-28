@@ -119,6 +119,11 @@ $currentUser = $auth->getCurrentUser();
                 case 'system_reports':
                     require_once(VIEWS_PATH . '/admin/system_reports.php');
                     break;
+                case 'dashboard':
+                    if ($_SESSION['rol'] === 'administrador') {
+                        require_once(VIEWS_PATH . '/admin/dashboard.php');
+                    }
+                    break;
                 
                 default:
                     $welcomeMessage = match($_SESSION['rol']) {
