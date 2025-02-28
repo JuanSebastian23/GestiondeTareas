@@ -27,7 +27,16 @@ if (empty($tareas)) {
             <td><?= htmlspecialchars($tarea['fecha_entrega']) ?></td>
             <td><?= htmlspecialchars($tarea['grupo_nombre']) ?></td>
             <td><?= htmlspecialchars($tarea['estado_nombre']) ?></td>
-            <td><button class="btn btn-sm btn-primary">Ver</button></td>
+            <td>
+                <?php if ($tarea['estado_nombre'] !== 'completada' && $tarea['estado_nombre'] !== 'vencida' && $tarea['estado_nombre'] !== 'calificada'): ?>
+                    <button class="btn btn-sm btn-primary btn-ver-tarea" 
+                data-bs-toggle="modal" 
+                data-bs-target="#modalSubirTarea"
+                data-id="<?= $tarea['id'] ?>">
+            Ver
+        </button>
+                <?php endif; ?>
+            </td>
         </tr>
     <?php endforeach; ?>
 </tbody>
