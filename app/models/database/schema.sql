@@ -133,13 +133,14 @@ CREATE TABLE tareas (
     FOREIGN KEY (estado_id) REFERENCES estados_tarea(id)
 );
 
--- Tabla de entregas
+-- Tabla de entregas (con la columna calificacion agregada)
 CREATE TABLE entregas_tarea (
     id INT PRIMARY KEY AUTO_INCREMENT,
     tarea_id INT NOT NULL,
     estudiante_id INT NOT NULL,
     estado_id INT NOT NULL,
-    fecha_entrega TIMESTAMP,
+    fecha_entrega TIMESTAMP NULL,
+    calificacion DECIMAL(5,2) NULL,
     comentarios TEXT,
     archivo_adjunto VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
