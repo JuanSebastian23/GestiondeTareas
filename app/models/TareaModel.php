@@ -202,17 +202,50 @@ class TareaModel {
         
         return $result->fetch_all(MYSQLI_ASSOC);
     }
-    
+
+    /**
+     * Actualiza la información de una entrega tras la calificación
+     */
     public function actualizarEntrega($datos) {
+        // Revisar en la base de datos si la columna se llama calificacion o nota
+        $sql = "DESCRIBE entregas_tarea";
+        $result = $this->conn->query($sql);
+        $columnExists = false;
+        $columnName = "calificacion"; // Nombre por defecto
+        
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                if ($row['Field'] === 'calificacion') {
+                    $columnExists = true;
+                    break;
+                } else if ($row['Field'] === 'nota') {
+                    $columnName = "nota";
+                    $columnExists = true;
+                    break;
+                }
+            }
+        }
+        
+        // Si no existe la columna, intentamos crearla
+        if (!$columnExists) {
+            $alterSql = "ALTER TABLE entregas_tarea ADD COLUMN $columnName DECIMAL(5,2) NULL";
+            $this->conn->query($alterSql);
+        }
+        
+        // Ahora procedemos a actualizar usando el nombre de columna correcto
         $sql = "UPDATE entregas_tarea 
                 SET estado_id = ?, 
-                    calificacion = ?, 
+                    $columnName = ?, 
                     comentarios = ? 
                 WHERE id = ?";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("idsi", $datos['estado_id'], $datos['calificacion'], $datos['comentarios'], $datos['id']);
         
-        return $stmt->execute();
+        $stmt = $this->conn->prepare($sql);
+        if ($stmt) {
+            $stmt->bind_param("idsi", $datos['estado_id'], $datos['calificacion'], $datos['comentarios'], $datos['id']);
+            return $stmt->execute();
+        }
+        
+        return false;
     }
     
     public function actualizarEstadoTarea($tareaId, $estadoId) {
@@ -221,6 +254,45 @@ class TareaModel {
         $stmt->bind_param("ii", $estadoId, $tareaId);
         
         return $stmt->execute();
+    }
+
+    // Añadir métodos para estadísticas
+
+    /**
+     * Cuenta el número total de tareas en el sistema
+     */
+    public function contarTodasLasTareas() {
+        $query = "SELECT COUNT(*) as total FROM tareas";
+        $result = $this->conn->query($query);
+        $row = $result->fetch_assoc();
+        return $row['total'] ?? 0;
+    }
+
+    /**
+     * Cuenta el número de tareas activas
+     */
+    public function contarTareasActivas() {
+        // Ajusta esta consulta según la estructura de tu tabla de tareas
+        $query = "SELECT COUNT(*) as total FROM tareas WHERE estado_id != 4"; // Asumiendo que estado_id=4 es para tareas archivadas o eliminadas
+        $result = $this->conn->query($query);
+        $row = $result->fetch_assoc();
+        return $row['total'] ?? 0;
+    }
+
+    /**
+     * Cuenta el número de tareas según su estado
+     * @param string $estado Nombre del estado a contar
+     */
+    public function contarTareasPorEstado($estado) {
+        $query = "SELECT COUNT(t.id) as total FROM tareas t 
+                  JOIN estados_tarea e ON t.estado_id = e.id 
+                  WHERE e.nombre = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("s", $estado);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        return $row['total'] ?? 0;
     }
 }
 ?>

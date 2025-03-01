@@ -291,4 +291,20 @@ class GrupoController {
             return ['error' => $e->getMessage()];
         }
     }
+
+    /**
+     * Cuenta el número de estudiantes en un grupo
+     * @param int $grupoId ID del grupo
+     * @return int Número de estudiantes
+     */
+    public function contarEstudiantesPorGrupo($grupoId) {
+        // Si tienes un método similar en el modelo de Grupo, úsalo
+        if (method_exists($this->model, 'contarEstudiantesPorGrupo')) {
+            return $this->model->contarEstudiantesPorGrupo($grupoId);
+        }
+        
+        // Si no, usa la instancia de TareaModel que ya tiene este método
+        $tareaModel = new TareaModel();
+        return $tareaModel->contarEstudiantesPorGrupo($grupoId);
+    }
 }

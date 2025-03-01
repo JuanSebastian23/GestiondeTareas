@@ -137,5 +137,26 @@ class TareaController {
             return ['error' => 'Error al actualizar el estado de la tarea'];
         }
     }
+
+    // Asegurarse de tener un método para obtener estadísticas de tareas
+    public function obtenerEstadisticas() {
+        $tareaModel = new TareaModel();
+        
+        return [
+            'total_tareas' => $tareaModel->contarTodasLasTareas(),
+            'tareas_activas' => $tareaModel->contarTareasActivas(),
+            'tareas_completadas' => $tareaModel->contarTareasPorEstado('Completada'),
+            'tareas_pendientes' => $tareaModel->contarTareasPorEstado('Pendiente')
+        ];
+    }
+
+    /**
+     * Cuenta el número de estudiantes en un grupo específico
+     * @param int $grupoId ID del grupo
+     * @return int Número de estudiantes en el grupo
+     */
+    public function contarEstudiantesPorGrupo($grupoId) {
+        return $this->model->contarEstudiantesPorGrupo($grupoId);
+    }
 }
 ?>
