@@ -252,7 +252,10 @@ class TareaController {
     public function crearTarea($datos) {
         // Validar datos
         if (empty($datos['titulo']) || empty($datos['fecha_entrega']) || 
-            empty($datos['materia_id']) || empty($datos['grupo_id'])) {
+            empty($datos['materia_id']) || empty($datos['grupo_id']) || 
+            empty($datos['profesor_id'])) {
+            
+            error_log("Datos incompletos para crear tarea: " . print_r($datos, true));
             return ['error' => 'Todos los campos obligatorios deben ser completados'];
         }
         
@@ -269,7 +272,12 @@ class TareaController {
             
             if ($tareaId) {
                 // Enviar notificaciones a los estudiantes del grupo
-                $this->enviarNotificacionesTarea($tareaId, $datos['grupo_id'], $datos['titulo'], $datos['materia_id']);
+                try {
+                    $this->enviarNotificacionesTarea($tareaId, $datos['grupo_id'], $datos['titulo'], $datos['materia_id']);
+                } catch (Exception $e) {
+                    error_log("Error al enviar notificaciones: " . $e->getMessage());
+                    // No hacemos fallar la creación si las notificaciones fallan
+                }
                 
                 return [
                     'success' => true,
@@ -277,9 +285,11 @@ class TareaController {
                     'id' => $tareaId
                 ];
             } else {
+                error_log("No se pudo insertar la tarea en la base de datos");
                 return ['error' => 'No se pudo crear la tarea'];
             }
         } catch (Exception $e) {
+            error_log("Excepción al crear tarea: " . $e->getMessage());
             return ['error' => 'Error al crear la tarea: ' . $e->getMessage()];
         }
     }
@@ -347,41 +357,110 @@ class TareaController {
             return ['error' => 'Faltan datos obligatorios'];
         }
         
-        // Verificar si ya existe una entrega previa
-        $entregaExistente = $this->verificarEntrega($datos['tarea_id'], $datos['estudiante_id']);
-        if ($entregaExistente) {
-            return ['error' => 'Ya has entregado esta tarea anteriormente'];
+        try {
+            // Verificar si ya existe una entrega previa
+            $entregaExistente = $this->verificarEntrega($datos['tarea_id'], $datos['estudiante_id']);
+            if ($entregaExistente) {
+                return ['error' => 'Ya has entregado esta tarea anteriormente'];
+            }
+            
+            // Verificar si la tarea aún está activa
+            $tarea = $this->model->obtenerTareaPorId($datos['tarea_id']);
+            if (!$tarea) {
+                return ['error' => 'La tarea no existe'];
+            }
+            
+            $fechaActual = time();
+            $fechaEntrega = strtotime($tarea['fecha_entrega']);
+            
+            if ($fechaEntrega < $fechaActual) {
+                return ['error' => 'No se pueden entregar tareas vencidas'];
+            }
+            
+            // Preparar datos para la entrega
+            $datosEntrega = [
+                'tarea_id' => $datos['tarea_id'],
+                'estudiante_id' => $datos['estudiante_id'],
+                'comentarios' => $datos['comentarios'] ?? '',
+                'archivo_adjunto' => $datos['archivo_adjunto'] ?? null
+            ];
+            
+            // Realizar la entrega
+            $resultado = $this->model->registrarEntrega($datosEntrega);
+            
+            if ($resultado) {
+                // Obtener información del estudiante
+                $estudiante = $this->obtenerDatosEstudiante($datos['estudiante_id']);
+                
+                // Obtener el profesor asignado a la tarea
+                $profesorId = $tarea['profesor_id'];
+                
+                // Enviar notificación al profesor
+                $this->enviarNotificacionEntrega(
+                    $profesorId,
+                    $estudiante,
+                    $tarea,
+                    $datos['archivo_adjunto'] ?? null
+                );
+                
+                return ['success' => 'Tarea entregada correctamente'];
+            } else {
+                return ['error' => 'No se pudo registrar la entrega'];
+            }
+        } catch (Exception $e) {
+            error_log('Error en entregarTarea: ' . $e->getMessage());
+            return ['error' => 'Error al entregar la tarea: ' . $e->getMessage()];
         }
+    }
+
+    /**
+     * Obtiene datos básicos de un estudiante
+     * @param int $estudianteId ID del estudiante
+     * @return array Datos del estudiante
+     */
+    private function obtenerDatosEstudiante($estudianteId) {
+        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
         
-        // Verificar si la tarea aún está activa
-        $tarea = $this->model->obtenerTareaPorId($datos['tarea_id']);
-        if (!$tarea) {
-            return ['error' => 'La tarea no existe'];
-        }
+        $sql = "SELECT id, nombre, apellidos FROM usuarios WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $estudianteId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $estudiante = $result->fetch_assoc();
         
-        $fechaActual = time();
-        $fechaEntrega = strtotime($tarea['fecha_entrega']);
+        $conn->close();
+        return $estudiante;
+    }
+
+    /**
+     * Envía una notificación al profesor cuando un estudiante entrega una tarea
+     * @param int $profesorId ID del profesor
+     * @param array $estudiante Datos del estudiante
+     * @param array $tarea Datos de la tarea
+     * @param string|null $archivoAdjunto Nombre del archivo adjunto (si existe)
+     */
+    private function enviarNotificacionEntrega($profesorId, $estudiante, $tarea, $archivoAdjunto) {
+        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
         
-        if ($fechaEntrega < $fechaActual) {
-            return ['error' => 'No se pueden entregar tareas vencidas'];
-        }
+        // Crear el título y mensaje de la notificación
+        $nombreCompleto = $estudiante['nombre'] . ' ' . $estudiante['apellidos'];
+        $titulo = "Nueva entrega: " . $tarea['titulo'];
         
-        // Preparar datos para la entrega
-        $datosEntrega = [
-            'tarea_id' => $datos['tarea_id'],
-            'estudiante_id' => $datos['estudiante_id'],
-            'comentarios' => $datos['comentarios'] ?? '',
-            'archivo_adjunto' => $datos['archivo_adjunto'] ?? null
-        ];
-        
-        // Realizar la entrega
-        $resultado = $this->model->registrarEntrega($datosEntrega);
-        
-        if ($resultado) {
-            return ['success' => 'Tarea entregada correctamente'];
+        // Crear mensaje con o sin referencia al archivo adjunto
+        $mensaje = $nombreCompleto . " ha entregado la tarea '" . $tarea['titulo'] . "'";
+        if ($archivoAdjunto) {
+            $mensaje .= " con un archivo adjunto.";
         } else {
-            return ['error' => 'No se pudo registrar la entrega'];
+            $mensaje .= ".";
         }
+        
+        // Insertar la notificación para el profesor
+        $sql = "INSERT INTO notificaciones (usuario_id, titulo, mensaje, leida) VALUES (?, ?, ?, 0)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("iss", $profesorId, $titulo, $mensaje);
+        $stmt->execute();
+        
+        $conn->close();
     }
 
     /**
@@ -392,6 +471,59 @@ class TareaController {
      */
     public function verificarEntrega($tareaId, $estudianteId) {
         return $this->model->obtenerEntregaPorEstudiante($tareaId, $estudianteId);
+    }
+
+    /**
+     * Obtiene los detalles de una tarea específica por su ID
+     * @param int $tareaId ID de la tarea
+     * @return array|null Detalles de la tarea o null si no existe
+     */
+    public function obtenerTareaPorId($tareaId) {
+        return $this->model->obtenerTareaPorId($tareaId);
+    }
+
+    /**
+     * Obtiene todas las entregas para una tarea específica
+     * @param int $tareaId ID de la tarea
+     * @return array Lista de entregas
+     */
+    public function obtenerEntregasPorTarea($tareaId) {
+        return $this->model->obtenerEntregasPorTarea($tareaId);
+    }
+
+    /**
+     * Cuenta el número de entregas pendientes de revisión para un profesor
+     * @param int $profesorId ID del profesor
+     * @return int Número de entregas pendientes
+     */
+    public function contarEntregasPendientes($profesorId) {
+        if (!$profesorId) {
+            return 0;
+        }
+        
+        try {
+            $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+            
+            // Obtenemos entregas que están en estado "entregada" (no calificadas)
+            // y que pertenecen a tareas creadas por este profesor
+            $sql = "SELECT COUNT(*) as total FROM entregas_tarea et
+                    INNER JOIN estados_tarea est ON et.estado_id = est.id
+                    INNER JOIN tareas t ON et.tarea_id = t.id
+                    WHERE t.profesor_id = ? 
+                    AND est.nombre = 'entregada'";
+                    
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("i", $profesorId);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $row = $result->fetch_assoc();
+            
+            $conn->close();
+            return (int)($row['total'] ?? 0);
+        } catch (Exception $e) {
+            error_log("Error al contar entregas pendientes: " . $e->getMessage());
+            return 0;
+        }
     }
 }
 ?>

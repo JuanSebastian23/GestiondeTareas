@@ -117,11 +117,16 @@ if (isset($_GET['action'])) {
                 case 'assigned_tasks':
                     require_once(VIEWS_PATH . '/teacher/assigned_tasks.php');
                     break;
+                case 'task_submissions':
+                    // Si no hay ID específico, mostrar todas las entregas
+                    if (!isset($_GET['tarea_id'])) {
+                        require_once(VIEWS_PATH . '/teacher/all_task_submissions.php');
+                    } else {
+                        require_once(VIEWS_PATH . '/teacher/task_submissions.php');
+                    }
+                    break;
                 case 'notifications':
                     require_once(VIEWS_PATH . '/teacher/notifications.php');
-                    break;
-                case 'reports':
-                    require_once(VIEWS_PATH . '/teacher/reports.php');
                     break;
 
                 // Vistas de Estudiante

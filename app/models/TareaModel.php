@@ -21,16 +21,40 @@ class TareaModel {
      * @return int|bool ID de la tarea insertada o false en caso de error
      */
     public function insertarTarea($titulo, $descripcion, $fechaEntrega, $materiaId, $grupoId, $profesorId) {
-        $estadoId = 1; // Estado "pendiente" por defecto
-        $sql = "INSERT INTO tareas (titulo, descripcion, fecha_entrega, materia_id, grupo_id, profesor_id, estado_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("sssiiii", $titulo, $descripcion, $fechaEntrega, $materiaId, $grupoId, $profesorId, $estadoId);
-        
-        if ($stmt->execute()) {
-            return $stmt->insert_id; // Devuelve el ID de la tarea recién insertada
+        try {
+            $estadoId = 1; // Estado "pendiente" por defecto
+            $sql = "INSERT INTO tareas (titulo, descripcion, fecha_entrega, materia_id, grupo_id, profesor_id, estado_id) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?)";
+            
+            // Registrar datos para debug
+            error_log("Insertando tarea: " . json_encode([
+                'titulo' => $titulo,
+                'fecha' => $fechaEntrega,
+                'materia_id' => $materiaId,
+                'grupo_id' => $grupoId, 
+                'profesor_id' => $profesorId,
+                'estado_id' => $estadoId
+            ]));
+            
+            $stmt = $this->conn->prepare($sql);
+            if (!$stmt) {
+                throw new Exception("Error en la consulta SQL: " . $this->conn->error);
+            }
+            
+            $stmt->bind_param("sssiiii", $titulo, $descripcion, $fechaEntrega, $materiaId, $grupoId, $profesorId, $estadoId);
+            
+            if ($stmt->execute()) {
+                $insertId = $stmt->insert_id;
+                error_log("Tarea insertada con ID: " . $insertId);
+                return $insertId; // Devuelve el ID de la tarea recién insertada
+            } else {
+                error_log("Error al ejecutar la inserción: " . $stmt->error);
+                return false;
+            }
+        } catch (Exception $e) {
+            error_log("Excepción en insertarTarea: " . $e->getMessage());
+            throw $e;
         }
-        
-        return false;
     }
 
     public function getTareasConDetalles($estudiante_id) {

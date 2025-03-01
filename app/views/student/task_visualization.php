@@ -64,19 +64,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
         
         // Si no hay errores previos y se adjuntó un archivo o se envió un comentario
         if ($tipoAlerta !== "danger" && ($archivo_adjunto !== null || !empty($_POST['comentarios']))) {
-            $resultado = $tareaController->entregarTarea([
-                'tarea_id' => $tarea_id,
-                'estudiante_id' => $estudiante_id,
-                'comentarios' => $_POST['comentarios'] ?? '',
-                'archivo_adjunto' => $archivo_adjunto
-            ]);
-            
-            if (isset($resultado['success'])) {
-                $mensajeResultado = $resultado['success'];
-                $tipoAlerta = "success";
-            } else {
-                $mensajeResultado = $resultado['error'] ?? "Error al entregar la tarea.";
+            try {
+                $resultado = $tareaController->entregarTarea([
+                    'tarea_id' => $tarea_id,
+                    'estudiante_id' => $estudiante_id,
+                    'comentarios' => $_POST['comentarios'] ?? '',
+                    'archivo_adjunto' => $archivo_adjunto
+                ]);
+                
+                if (isset($resultado['success'])) {
+                    $mensajeResultado = $resultado['success'];
+                    $tipoAlerta = "success";
+                } else {
+                    $mensajeResultado = $resultado['error'] ?? "Error al entregar la tarea.";
+                    $tipoAlerta = "danger";
+                }
+            } catch (Exception $e) {
+                $mensajeResultado = "Error en el sistema: " . $e->getMessage();
                 $tipoAlerta = "danger";
+                error_log("Error al entregar tarea: " . $e->getMessage());
             }
         } elseif ($tipoAlerta !== "danger") {
             $mensajeResultado = "Debes adjuntar un archivo o añadir un comentario.";
@@ -86,22 +92,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
 }
 
 // Obtener las tareas del estudiante
-$tareas = $tareaController->obtenerTareasParaEstudiantes();
+$tareas = [];
+try {
+    $tareas = $tareaController->obtenerTareasParaEstudiantes();
+} catch (Exception $e) {
+    $mensajeResultado = "No se pudieron cargar las tareas: " . $e->getMessage();
+    $tipoAlerta = "danger";
+    error_log("Error al cargar tareas: " . $e->getMessage());
+}
 
 // Obtener lista de materias para filtros
-$materias = $materiaController->obtenerMateriasEstudiante($estudiante_id);
+$materias = [];
+try {
+    $materias = $materiaController->obtenerMateriasEstudiante($estudiante_id);
+} catch (Exception $e) {
+    error_log("Error al cargar materias: " . $e->getMessage());
+}
+
 $filtroMateria = $_GET['materia'] ?? null;
 $filtroEstado = $_GET['estado'] ?? null;
 
 // Filtrar tareas si se especifica algún filtro
-if ($filtroMateria || $filtroEstado) {
-    $tareas = $tareaController->obtenerTareasFiltradas($filtroMateria, $filtroEstado);
+if (($filtroMateria || $filtroEstado) && empty($mensajeResultado)) {
+    try {
+        $tareas = $tareaController->obtenerTareasFiltradas($filtroMateria, $filtroEstado);
+    } catch (Exception $e) {
+        $mensajeResultado = "Error al filtrar tareas: " . $e->getMessage();
+        $tipoAlerta = "danger";
+        error_log("Error al filtrar tareas: " . $e->getMessage());
+    }
 }
 
 // Organizar las tareas por fecha de entrega
-usort($tareas, function($a, $b) {
-    return strtotime($a['fecha_entrega']) - strtotime($b['fecha_entrega']);
-});
+if (!empty($tareas)) {
+    usort($tareas, function($a, $b) {
+        return strtotime($a['fecha_entrega']) - strtotime($b['fecha_entrega']);
+    });
+}
 
 // Separar tareas en próximas y pendientes
 $tareasPendientes = [];
