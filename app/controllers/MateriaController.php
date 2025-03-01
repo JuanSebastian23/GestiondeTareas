@@ -132,5 +132,48 @@ class MateriaController {
         return ['error' => 'Error al actualizar el estado de la materia'];
     }
 
+    /**
+     * Obtiene las materias asignadas a un estudiante específico
+     * @param int $estudianteId ID del estudiante
+     * @return array Lista de materias
+     */
+    public function obtenerMateriasEstudiante($estudianteId) {
+        // Intentar usar método del modelo si existe
+        if (method_exists($this->modelo, 'obtenerMateriasEstudiante')) {
+            return $this->modelo->obtenerMateriasEstudiante($estudianteId);
+        }
+        
+        // Implementación alternativa
+        try {
+            $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+            if ($conn->connect_error) {
+                throw new Exception("Error de conexión: " . $conn->connect_error);
+            }
+            
+            $sql = "SELECT DISTINCT m.* 
+                    FROM materias m
+                    INNER JOIN grupo_materia gm ON m.id = gm.materia_id
+                    INNER JOIN estudiante_grupo eg ON gm.grupo_id = eg.grupo_id
+                    WHERE eg.estudiante_id = ? AND m.activo = 1";
+                    
+            $stmt = $conn->prepare($sql);
+            if (!$stmt) {
+                throw new Exception("Error preparando la consulta: " . $conn->error);
+            }
+            
+            $stmt->bind_param("i", $estudianteId);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $materias = $result->fetch_all(MYSQLI_ASSOC);
+            $stmt->close();
+            $conn->close();
+            
+            return $materias;
+        } catch (Exception $e) {
+            error_log("Error obteniendo materias del estudiante: " . $e->getMessage());
+            return [];
+        }
+    }
+
 }
 

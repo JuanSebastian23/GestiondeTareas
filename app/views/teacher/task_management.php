@@ -1,21 +1,35 @@
 <?php
 if (!defined('ROOT_PATH')) {
-require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/config/dirs.php');
+    require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/config/dirs.php');
 }
-
 require_once(CONTROLLERS_PATH . '/GrupoController.php');
 require_once(CONTROLLERS_PATH . '/MateriaController.php');
 require_once(CONTROLLERS_PATH . '/GestionTareaController.php');
+require_once(CONTROLLERS_PATH . '/TareaController.php');
+
+// Inicializar controlador
+$gestionTareaController = new GestionTareaController();
+$tareaController = new TareaController();
+
+// Procesar envío del formulario
+$resultado = null;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $resultado = $gestionTareaController->procesarAccion();
+}
+
+// Obtener datos para los selectores del formulario
+$datosFormulario = $gestionTareaController->getDatosFormulario();
 
 // Definir correctamente el controlador
 $materiaController = new MateriaController();
 $grupoController = new GrupoController();
-$gestionTareaController = new GestionTareaController();
 $grupos = $grupoController->obtenerGrupos();
 $profesores = $grupoController->obtenerProfesores();
 $materias = $materiaController->obtenerTodas();
+
+// Obtener tareas - usamos métodos seguros que sabemos que existen
 $tareasActivas = $gestionTareaController->obtenerTareasActivas();
-$tareas = $gestionTareaController->obtenerTodasLasTareasConDetalles();
+$tareas = $gestionTareaController->obtenerTodasLasTareas();
 
 // Estadísticas básicas para el dashboard
 $totalTareas = count($tareas);
@@ -131,99 +145,45 @@ foreach ($tareas as $tarea) {
                                 </h2>
                             </div>
                             <div class="card-body">
-                                <form id="formCrearTarea" class="needs-validation" novalidate>
-                                    <div class="mb-4">
-                                        <input id="titulo" name="titulo" type="text" class="form-control form-control-lg bg-light" 
-                                               placeholder="Título de la Tarea" required>
-                                        <div class="invalid-feedback">
-                                            Por favor, ingrese un título para la tarea.
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="mb-4">
-                                        <textarea id="descripcion" name="descripcion" class="form-control bg-light" rows="4" 
-                                                  placeholder="Descripción detallada de la tarea" required></textarea>
-                                        <div class="invalid-feedback">
-                                            La descripción es obligatoria.
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="row mb-4">
+                                <form action="<?= BASE_URL ?>?page=task_management&role=profesor" method="post">
+                                    <input type="hidden" name="accion" value="crear">
+                                    <div class="row g-3">
                                         <div class="col-md-6">
-                                            <label for="fecha_entrega" class="form-label text-muted">Fecha de Entrega</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text bg-light border-end-0">
-                                                    <i class="fas fa-calendar-alt"></i>
-                                                </span>
-                                                <input type="datetime-local" class="form-control bg-light border-start-0" 
-                                                       id="fecha_entrega" name="fecha_entrega" required>
-                                            </div>
-                                            <div class="invalid-feedback">
-                                                Seleccione una fecha de entrega válida.
-                                            </div>
+                                            <label for="titulo" class="form-label">Título de la tarea <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="titulo" name="titulo" required>
                                         </div>
-                                        
                                         <div class="col-md-6">
-                                            <label for="grupo_id" class="form-label text-muted">Grupo</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text bg-light border-end-0">
-                                                    <i class="fas fa-users"></i>
-                                                </span>
-                                                <select class="form-select bg-light border-start-0" id="grupo_id" name="grupo_id" required>
-                                                    <option value="" selected disabled>Seleccione un grupo...</option>
-                                                    <?php foreach ($grupos as $grupo): ?>
-                                                        <option value="<?= $grupo['id'] ?>">
-                                                            <?= htmlspecialchars($grupo['nombre']) ?>
-                                                        </option>
-                                                    <?php endforeach; ?>
-                                                </select>
-                                            </div>
-                                            <div class="invalid-feedback">
-                                                Seleccione un grupo.
-                                            </div>
+                                            <label for="fecha_entrega" class="form-label">Fecha de entrega <span class="text-danger">*</span></label>
+                                            <input type="datetime-local" class="form-control" id="fecha_entrega" name="fecha_entrega" required>
                                         </div>
-
-                                        <div class="col-md-6 mt-3">
-                                            <label for="materia_id" class="form-label text-muted">Materia</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text bg-light border-end-0">
-                                                    <i class="fas fa-book"></i>
-                                                </span>
-                                                <select class="form-select bg-light border-start-0" id="materia_id" name="materia_id" required>
-                                                    <option value="" selected disabled>Seleccione una materia...</option>
-                                                    <?php foreach ($materias as $materia): ?>
-                                                        <option value="<?= $materia['id'] ?>">
-                                                            <?= htmlspecialchars($materia['nombre']) ?>
-                                                        </option>
-                                                    <?php endforeach; ?>
-                                                </select>
-                                            </div>
-                                            <div class="invalid-feedback">
-                                                Seleccione una materia.
-                                            </div>
+                                        <div class="col-md-6">
+                                            <label for="grupo_id" class="form-label">Grupo <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="grupo_id" name="grupo_id" required>
+                                                <option value="">Seleccionar grupo...</option>
+                                                <?php foreach ($datosFormulario['grupos'] as $grupo): ?>
+                                                <option value="<?= $grupo['id'] ?>"><?= htmlspecialchars($grupo['nombre']) ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
                                         </div>
-                                        
-                                        <div class="col-md-6 mt-3">
-                                            <label for="profesor_id" class="form-label text-muted">Profesor Titular</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text bg-light border-end-0">
-                                                    <i class="fas fa-user-tie"></i>
-                                                </span>
-                                                <select class="form-select bg-light border-start-0" id="profesor_id" name="profesor_id">
-                                                    <option value="" selected disabled>Seleccione un profesor...</option>
-                                                    <?php foreach ($profesores as $profesor): ?>
-                                                        <option value="<?= $profesor['id'] ?>">
-                                                            <?= htmlspecialchars($profesor['nombre'] . ' ' . $profesor['apellidos']) ?>
-                                                        </option>
-                                                    <?php endforeach; ?>
-                                                </select>
-                                            </div>
+                                        <div class="col-md-6">
+                                            <label for="materia_id" class="form-label">Materia <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="materia_id" name="materia_id" required>
+                                                <option value="">Seleccionar materia...</option>
+                                                <?php foreach ($datosFormulario['materias'] as $materia): ?>
+                                                <option value="<?= $materia['id'] ?>"><?= htmlspecialchars($materia['nombre']) ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
+                                        <div class="col-12">
+                                            <label for="descripcion" class="form-label">Descripción</label>
+                                            <textarea class="form-control" id="descripcion" name="descripcion" rows="4"></textarea>
+                                        </div>
+                                        <div class="col-12 mt-4 text-end">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-save me-1"></i> Guardar Tarea
+                                            </button>
                                         </div>
                                     </div>
-                                    
-                                    <button id="submit" type="submit" class="btn btn-primary btn-lg w-100">
-                                        <i class="fas fa-plus-circle me-2"></i>Crear Tarea
-                                    </button>
                                 </form>
                             </div>
                         </div>

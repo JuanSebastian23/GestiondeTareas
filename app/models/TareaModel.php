@@ -16,12 +16,21 @@ class TareaModel {
         }
     }
 
+    /**
+     * Inserta una nueva tarea y devuelve su ID
+     * @return int|bool ID de la tarea insertada o false en caso de error
+     */
     public function insertarTarea($titulo, $descripcion, $fechaEntrega, $materiaId, $grupoId, $profesorId) {
         $estadoId = 1; // Estado "pendiente" por defecto
         $sql = "INSERT INTO tareas (titulo, descripcion, fecha_entrega, materia_id, grupo_id, profesor_id, estado_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("ssssiii", $titulo, $descripcion, $fechaEntrega, $materiaId, $grupoId, $profesorId, $estadoId);
-        return $stmt->execute();
+        $stmt->bind_param("sssiiii", $titulo, $descripcion, $fechaEntrega, $materiaId, $grupoId, $profesorId, $estadoId);
+        
+        if ($stmt->execute()) {
+            return $stmt->insert_id; // Devuelve el ID de la tarea recién insertada
+        }
+        
+        return false;
     }
 
     public function getTareasConDetalles($estudiante_id) {
@@ -293,6 +302,91 @@ class TareaModel {
         $result = $stmt->get_result();
         $row = $result->fetch_assoc();
         return $row['total'] ?? 0;
+    }
+
+    /**
+     * Obtiene los estudiantes de un grupo específico
+     * @param int $grupoId ID del grupo
+     * @return array Lista de IDs de estudiantes
+     */
+    public function obtenerEstudiantesPorGrupo($grupoId) {
+        $sql = "SELECT estudiante_id FROM estudiante_grupo WHERE grupo_id = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $grupoId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        $estudiantes = [];
+        while ($row = $result->fetch_assoc()) {
+            $estudiantes[] = $row['estudiante_id'];
+        }
+        
+        return $estudiantes;
+    }
+
+    /**
+     * Obtiene una tarea específica por su ID
+     * @param int $tareaId ID de la tarea
+     * @return array|null Datos de la tarea o null si no existe
+     */
+    public function obtenerTareaPorId($tareaId) {
+        $sql = "SELECT t.*, m.nombre AS materia_nombre, g.nombre AS grupo_nombre, e.nombre AS estado_nombre
+                FROM tareas t
+                INNER JOIN materias m ON t.materia_id = m.id
+                INNER JOIN grupos g ON t.grupo_id = g.id
+                INNER JOIN estados_tarea e ON t.estado_id = e.id
+                WHERE t.id = ?";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $tareaId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        return $result->fetch_assoc();
+    }
+
+    /**
+     * Registra una nueva entrega de tarea
+     * @param array $datos Datos de la entrega
+     * @return bool Éxito de la operación
+     */
+    public function registrarEntrega($datos) {
+        // Establecer estado inicial (Entregada)
+        $estadoEntregada = 2; // Asumiendo que 2 es el estado "entregada" o "en_progreso"
+        
+        $sql = "INSERT INTO entregas_tarea (tarea_id, estudiante_id, estado_id, comentarios, archivo_adjunto, fecha_entrega) 
+                VALUES (?, ?, ?, ?, ?, NOW())";
+                
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("iiiss", 
+            $datos['tarea_id'], 
+            $datos['estudiante_id'],
+            $estadoEntregada,
+            $datos['comentarios'],
+            $datos['archivo_adjunto']
+        );
+        
+        return $stmt->execute();
+    }
+
+    /**
+     * Verifica si un estudiante ya ha entregado una tarea y devuelve los detalles
+     * @param int $tareaId ID de la tarea
+     * @param int $estudianteId ID del estudiante
+     * @return array|null Datos de la entrega o null si no existe
+     */
+    public function obtenerEntregaPorEstudiante($tareaId, $estudianteId) {
+        $sql = "SELECT et.*, est.nombre AS estado 
+                FROM entregas_tarea et
+                INNER JOIN estados_tarea est ON et.estado_id = est.id
+                WHERE et.tarea_id = ? AND et.estudiante_id = ?";
+                
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("ii", $tareaId, $estudianteId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        return $result->fetch_assoc();
     }
 }
 ?>

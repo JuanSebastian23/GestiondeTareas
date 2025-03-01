@@ -298,13 +298,27 @@ class GrupoController {
      * @return int Número de estudiantes
      */
     public function contarEstudiantesPorGrupo($grupoId) {
-        // Si tienes un método similar en el modelo de Grupo, úsalo
-        if (method_exists($this->model, 'contarEstudiantesPorGrupo')) {
-            return $this->model->contarEstudiantesPorGrupo($grupoId);
+        try {
+            // Primero intentamos usar el método en el modelo Grupo
+            return $this->modelo->contarEstudiantesPorGrupo($grupoId);
+        } catch (Exception $e) {
+            // Si falla, registramos el error y usamos un método alternativo
+            error_log("Error usando modelo Grupo: " . $e->getMessage());
+            
+            // Verificar si podemos usar TareaModel como alternativa
+            if (!class_exists('TareaModel')) {
+                require_once(MODELS_PATH . '/TareaModel.php');
+            }
+            
+            try {
+                // Alternativa: usar TareaModel
+                $tareaModel = new TareaModel();
+                return $tareaModel->contarEstudiantesPorGrupo($grupoId);
+            } catch (Exception $e) {
+                // Si también falla, registramos el error y devolvemos 0
+                error_log("Error alternativo: " . $e->getMessage());
+                return 0;
+            }
         }
-        
-        // Si no, usa la instancia de TareaModel que ya tiene este método
-        $tareaModel = new TareaModel();
-        return $tareaModel->contarEstudiantesPorGrupo($grupoId);
     }
 }
