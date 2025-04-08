@@ -7,8 +7,13 @@ class GrupoController {
     private $usuarioModelo;
 
     public function __construct() {
-        $this->modelo = new Grupo();
-        $this->usuarioModelo = new Usuario();
+        try {
+            $this->modelo = new Grupo();
+            $this->usuarioModelo = new Usuario();
+        } catch (Exception $e) {
+            error_log("Error al inicializar GrupoController: " . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function obtenerProfesores() {
@@ -124,30 +129,42 @@ class GrupoController {
     }
 
     public function obtenerEstadisticas() {
-        $stats = [];
-        
-        // Obtener todos los grupos
-        $grupos = $this->modelo->obtenerTodos();
-        
-        // Contar el total de grupos
-        $stats['total_grupos'] = count($grupos);
-        
-        // Contar grupos activos
-        $gruposActivos = array_filter($grupos, function($grupo) {
-            return $grupo['activo'] == 1;
-        });
-        $stats['grupos_activos'] = count($gruposActivos);
-        
-        // Obtener total de estudiantes matriculados
-        $stats['total_estudiantes'] = $this->modelo->contarEstudiantes();
-        
-        // Obtener profesores asignados
-        $stats['total_profesores'] = $this->modelo->contarProfesores();
-        
-        // Obtener materias asignadas
-        $stats['total_materias'] = $this->modelo->contarMaterias();
-        
-        return $stats;
+        try {
+            $stats = [];
+            
+            // Obtener todos los grupos
+            $grupos = $this->modelo->obtenerTodos();
+            
+            // Contar el total de grupos
+            $stats['total_grupos'] = count($grupos);
+            
+            // Contar grupos activos
+            $gruposActivos = array_filter($grupos, function($grupo) {
+                return $grupo['activo'] == 1;
+            });
+            $stats['grupos_activos'] = count($gruposActivos);
+            
+            // Obtener total de estudiantes matriculados
+            $stats['total_estudiantes'] = $this->modelo->contarEstudiantes();
+            
+            // Obtener profesores asignados
+            $stats['total_profesores'] = $this->modelo->contarProfesores();
+            
+            // Obtener materias asignadas
+            $stats['total_materias'] = $this->modelo->contarMaterias();
+            
+            return $stats;
+        } catch (Exception $e) {
+            error_log("Error al obtener estadísticas de grupos: " . $e->getMessage());
+            return [
+                'total_grupos' => 0,
+                'grupos_activos' => 0,
+                'total_estudiantes' => 0,
+                'total_profesores' => 0,
+                'total_materias' => 0,
+                'error' => 'Error al obtener estadísticas'
+            ];
+        }
     }
 
     public function obtenerTodos() {
