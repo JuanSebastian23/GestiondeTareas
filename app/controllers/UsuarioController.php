@@ -5,27 +5,40 @@ class UsuarioController {
     private $usuarioModel;
 
     public function __construct() {
-        $this->usuarioModel = new Usuario();
+        try {
+            $this->usuarioModel = new Usuario();
+        } catch (Exception $e) {
+            error_log("Error al inicializar UsuarioController: " . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function procesarAccion() {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') return null;
+        try {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') return null;
 
-        $accion = $_POST['accion'] ?? '';
-        $resultado = match($accion) {
-            'crear' => $this->crearUsuario($_POST),
-            'actualizar' => $this->actualizarUsuario($_POST),
-            'eliminar' => $this->eliminarUsuario($_POST['id']),
-            'activar' => $this->activarUsuario($_POST['id']), // Nueva acción
-            default => ['error' => 'Acción no válida']
-        };
+            $accion = $_POST['accion'] ?? '';
+            $resultado = match($accion) {
+                'crear' => $this->crearUsuario($_POST),
+                'actualizar' => $this->actualizarUsuario($_POST),
+                'eliminar' => $this->eliminarUsuario($_POST['id']),
+                'activar' => $this->activarUsuario($_POST['id']), // Nueva acción
+                default => ['error' => 'Acción no válida']
+            };
 
-        // Guardar el resultado en sessionStorage
-        if ($resultado) {
+            // Guardar el resultado en sessionStorage
+            if ($resultado) {
+                echo "<script>sessionStorage.setItem('operationResult', '" . json_encode($resultado) . "');</script>";
+            }
+
+            return $resultado;
+        } catch (Exception $e) {
+            error_log("Error al procesar acción de usuario: " . $e->getMessage());
+            $resultado = ['error' => 'Error al procesar la solicitud: ' . $e->getMessage()];
+            
             echo "<script>sessionStorage.setItem('operationResult', '" . json_encode($resultado) . "');</script>";
+            return $resultado;
         }
-
-        return $resultado;
     }
 
     private function crearUsuario($datos) {

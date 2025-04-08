@@ -2,6 +2,13 @@
 require_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/config/dirs.php');
 require_once(CONTROLLERS_PATH . '/AuthController.php');
 
+// Asegurarse de cargar TareaController antes de usarlo
+if (file_exists(CONTROLLERS_PATH . '/TareaController.php')) {
+    require_once(CONTROLLERS_PATH . '/TareaController.php');
+} else {
+    die('Error: No se encuentra el archivo TareaController.php');
+}
+
 $auth = new AuthController();
 
 // Verificar si hay sesión activa
@@ -11,6 +18,23 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $currentUser = $auth->getCurrentUser();
+
+// Procesar acciones específicas
+if (isset($_GET['action'])) {
+    switch ($_GET['action']) {
+        case 'markAllAsRead':
+            if (isset($_SESSION['user_id'])) {
+                $tareaController = new TareaController();
+                $tareaController->marcarTodasComoLeidas($_SESSION['user_id']);
+                // Redirigir a la página anterior o a la de notificaciones
+                header('Location: ' . $_SERVER['HTTP_REFERER'] ?? BASE_URL . '?page=notifications');
+                exit();
+            }
+            break;
+            
+        // Más acciones según sea necesario
+    }
+}
 
 ?>
 <!DOCTYPE html>
@@ -93,11 +117,16 @@ $currentUser = $auth->getCurrentUser();
                 case 'assigned_tasks':
                     require_once(VIEWS_PATH . '/teacher/assigned_tasks.php');
                     break;
+                case 'task_submissions':
+                    // Si no hay ID específico, mostrar todas las entregas
+                    if (!isset($_GET['tarea_id'])) {
+                        require_once(VIEWS_PATH . '/teacher/all_task_submissions.php');
+                    } else {
+                        require_once(VIEWS_PATH . '/teacher/task_submissions.php');
+                    }
+                    break;
                 case 'notifications':
                     require_once(VIEWS_PATH . '/teacher/notifications.php');
-                    break;
-                case 'reports':
-                    require_once(VIEWS_PATH . '/teacher/reports.php');
                     break;
 
                 // Vistas de Estudiante
