@@ -26,6 +26,9 @@ $materiaController = new MateriaController();
 // Obtener el ID del estudiante actual desde la sesión
 $estudiante_id = $_SESSION['user_id'];
 
+// Verificar si se está accediendo a una tarea específica desde una notificación
+$tarea_destacada = isset($_GET['tarea_id']) ? intval($_GET['tarea_id']) : null;
+
 // Procesar envío de entregas
 $mensajeResultado = null;
 $tipoAlerta = null;
@@ -219,11 +222,14 @@ foreach ($tareas as $tarea) {
                 
                 // Verificar si ya fue entregada
                 $estadoEntrega = $tareaController->verificarEntrega($tarea['id'], $estudiante_id);
-            ?>
-                <div class="col">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="card-title mb-0"><?= htmlspecialchars($tarea['titulo']) ?></h5>
+            ?>                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm <?= $tarea_destacada == $tarea['id'] ? 'border-primary border-3' : '' ?>">                        <div class="card-header d-flex justify-content-between align-items-center <?= $tarea_destacada == $tarea['id'] ? 'bg-primary bg-opacity-10' : '' ?>">
+                            <h5 class="card-title mb-0 <?= $tarea_destacada == $tarea['id'] ? 'text-primary fw-bold' : '' ?>">
+                                <?php if ($tarea_destacada == $tarea['id']): ?>
+                                    <i class="fas fa-star text-warning me-2"></i>
+                                <?php endif; ?>
+                                <?= htmlspecialchars($tarea['titulo']) ?>
+                            </h5>
                             <span class="badge <?= $badgeClase ?>"><?= $badgeTexto ?></span>
                         </div>
                         <div class="card-body">
@@ -352,11 +358,15 @@ foreach ($tareas as $tarea) {
                 
                 // Verificar si ya fue entregada
                 $estadoEntrega = $tareaController->verificarEntrega($tarea['id'], $estudiante_id);
-            ?>
-                <div class="col">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                            <h5 class="card-title mb-0"><?= htmlspecialchars($tarea['titulo']) ?></h5>
+            ?>                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm <?= $tarea_destacada == $tarea['id'] ? 'border-primary border-3' : '' ?>">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center <?= $tarea_destacada == $tarea['id'] ? 'bg-primary bg-opacity-10' : '' ?>">
+                            <h5 class="card-title mb-0 <?= $tarea_destacada == $tarea['id'] ? 'text-primary fw-bold' : '' ?>">
+                                <?php if ($tarea_destacada == $tarea['id']): ?>
+                                    <i class="fas fa-star text-warning me-2"></i>
+                                <?php endif; ?>
+                                <?= htmlspecialchars($tarea['titulo']) ?>
+                            </h5>
                             <span class="badge bg-danger">Vencida hace <?= $diferenciaDias ?> días</span>
                         </div>
                         <div class="card-body">
@@ -466,5 +476,38 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // Desplazarse automáticamente a la tarea destacada desde notificación
+    <?php if ($tarea_destacada): ?>
+    setTimeout(function() {
+        const tareaDestacada = document.querySelector('.border-primary.border-3');
+        if (tareaDestacada) {
+            tareaDestacada.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+            
+            // Mostrar una animación de pulso para llamar la atención
+            tareaDestacada.style.animation = 'pulse 1s ease-in-out 3';
+        }
+    }, 500);
+    <?php endif; ?>
 });
 </script>
+
+<style>
+@keyframes pulse {
+    0% { 
+        transform: scale(1); 
+        box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.4);
+    }
+    50% { 
+        transform: scale(1.02); 
+        box-shadow: 0 0 0 10px rgba(13, 110, 253, 0.1);
+    }
+    100% { 
+        transform: scale(1); 
+        box-shadow: 0 0 0 0 rgba(13, 110, 253, 0);
+    }
+}
+</style>
