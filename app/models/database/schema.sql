@@ -156,9 +156,11 @@ CREATE TABLE notificaciones (
     usuario_id INT NOT NULL,
     titulo VARCHAR(200) NOT NULL,
     mensaje TEXT NOT NULL,
+    tarea_id INT NULL,
     leida BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    FOREIGN KEY (tarea_id) REFERENCES tareas(id)
 );
 
 -- Índices para optimizar consultas
