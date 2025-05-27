@@ -3,12 +3,35 @@ if (!defined('ROOT_PATH')) {
     include_once($_SERVER['DOCUMENT_ROOT'] . '/GestiondeTareas/app/config/dirs.php');
 }
 
+// Configurar zona horaria para Colombia
+date_default_timezone_set('America/Bogota');
+
 // Cargamos los controladores necesarios
 require_once(CONTROLLERS_PATH . '/TareaController.php');
 
 // Función de ayuda para cargar assets
 function asset($path) {
     return '/GestiondeTareas/public/assets/' . ltrim($path, '/');
+}
+
+// Función para calcular tiempo transcurrido
+function calcularTiempoTranscurrido($fechaCreacion) {
+    $timestamp_notificacion = strtotime($fechaCreacion);
+    $timestamp_ahora = time();
+    $diferencia_segundos = $timestamp_ahora - $timestamp_notificacion;
+    
+    if ($diferencia_segundos < 60) {
+        return 'Hace un momento';
+    } elseif ($diferencia_segundos < 3600) {
+        $minutos = floor($diferencia_segundos / 60);
+        return $minutos . ' minuto' . ($minutos > 1 ? 's' : '') . ' atrás';
+    } elseif ($diferencia_segundos < 86400) {
+        $horas = floor($diferencia_segundos / 3600);
+        return $horas . ' hora' . ($horas > 1 ? 's' : '') . ' atrás';
+    } else {
+        $dias = floor($diferencia_segundos / 86400);
+        return $dias . ' día' . ($dias > 1 ? 's' : '') . ' atrás';
+    }
 }
 
 // Obtener las notificaciones para el usuario actual
@@ -32,6 +55,9 @@ if (isset($_SESSION['user_id'])) {
         $db = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
         
         if (!$db->connect_error) {
+            // Configurar zona horaria en MySQL
+            $db->query("SET time_zone = '-05:00'");
+            
             // Contar notificaciones no leídas
             $stmt = $db->prepare("SELECT COUNT(*) as total FROM notificaciones WHERE usuario_id = ? AND leida = 0");
             if ($stmt) {
@@ -108,24 +134,9 @@ if (isset($_SESSION['user_id'])) {
                                                 <i class="fas fa-bell fa-fw"></i>
                                             </div>
                                         </div>
-                                        <div>
-                                            <p class="mb-1 text-wrap <?= $notificacion['leida'] ? '' : 'fw-bold' ?>"><?= htmlspecialchars($notificacion['titulo']) ?></p>
+                                        <div>                                            <p class="mb-1 text-wrap <?= $notificacion['leida'] ? '' : 'fw-bold' ?>"><?= htmlspecialchars($notificacion['titulo']) ?></p>
                                             <small class="text-muted">
-                                                <?php 
-                                                $fecha = new DateTime($notificacion['created_at']);
-                                                $ahora = new DateTime();
-                                                $diff = $ahora->diff($fecha);
-                                                
-                                                if ($diff->d < 1) {
-                                                    if ($diff->h < 1) {
-                                                        echo $diff->i . " minutos atrás";
-                                                    } else {
-                                                        echo $diff->h . " horas atrás";
-                                                    }
-                                                } else {
-                                                    echo $fecha->format('d M, H:i');
-                                                }
-                                                ?>
+                                                <?= calcularTiempoTranscurrido($notificacion['created_at']) ?>
                                             </small>
                                         </div>
                                     </div>

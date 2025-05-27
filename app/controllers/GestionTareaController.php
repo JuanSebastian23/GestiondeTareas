@@ -16,7 +16,21 @@ class GestionTareaController {
         $this->grupoController = new GrupoController();
         $this->tareaModel = new TareaModel();
     }
-    
+      /**
+     * Procesa la creación de una tarea desde AJAX
+     */
+    public function procesarCreacionTarea($datos) {
+        if (!isset($_SESSION['user_id'])) {
+            return ['error' => 'Usuario no autenticado'];
+        }
+        
+        // Añadir el ID del profesor actual
+        $datos['profesor_id'] = $_SESSION['user_id'];
+        
+        // Utilizar el método de TareaController para crear la tarea y enviar notificaciones
+        return $this->tareaController->crearTarea($datos);
+    }
+
     /**
      * Procesa la acción solicitada
      */
