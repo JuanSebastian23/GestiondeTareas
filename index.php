@@ -145,6 +145,17 @@ if (isset($_GET['action'])) {
                 case 'resources':
                     require_once(VIEWS_PATH . '/student/resources.php');
                     break;
+                case 'profile':
+                if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'estudiante') {
+                    require_once(CONTROLLERS_PATH . '/PerfilController.php');
+                    $perfilController = new PerfilController();
+                    // Llama al nuevo método principal del controlador que definimos como 'procesarSolicitud()'
+                    $perfilController->procesarSolicitud(); // <-- ¡ESTE ES EL CAMBIO!
+                } else {
+                    header('Location: ' . BASE_URL . '/app/views/auth/login.php');
+                    exit();
+                }
+                    break;
 
                 // Vistas de Administrador
                 case 'user_management':
