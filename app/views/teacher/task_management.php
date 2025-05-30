@@ -24,23 +24,83 @@ $profesorId = $_SESSION['user_id'];
 $grupos = $grupoController->obtenerGruposPorProfesor($profesorId);
 $materias = $materiaController->obtenerMateriasPorProfesor($profesorId);
 
-// Manejar creación de tareas
+// Manejar acciones de tareas
 $mensaje = null;
 $tipoMensaje = null;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'crear') {
-    // Añadir el ID del profesor actual
-    $_POST['profesor_id'] = $profesorId;
-    
-    // Crear la tarea
-    $resultado = $tareaController->crearTarea($_POST);
-    
-    if (isset($resultado['success'])) {
-        $mensaje = "Tarea creada exitosamente.";
-        $tipoMensaje = "success";
-    } else {
-        $mensaje = "Error: " . ($resultado['error'] ?? "No se pudo crear la tarea");
-        $tipoMensaje = "danger";
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
+
+    if ($_POST['accion'] === 'crear') {
+        // Añadir el ID del profesor actual
+        $_POST['profesor_id'] = $profesorId;
+
+        // Crear la tarea
+        $resultado = $tareaController->crearTarea($_POST);
+
+        if (isset($resultado['success'])) {
+            $mensaje = "Tarea creada exitosamente.";
+            $tipoMensaje = "success";
+        } else {
+            $mensaje = "Error: " . ($resultado['error'] ?? "No se pudo crear la tarea");
+            $tipoMensaje = "danger";
+        }
+    } elseif ($_POST['accion'] === 'actualizar') {
+        // Verificar que el ID de la tarea esté presente
+        if (isset($_POST['id']) && !empty($_POST['id'])) {
+            // Actualizar la tarea
+            $resultado = $tareaController->actualizarTarea($_POST);
+
+            if (isset($resultado['success'])) {
+                $mensaje = "Tarea actualizada exitosamente.";
+                $tipoMensaje = "success";
+            } else {
+                $mensaje = "success: " . ($resultado['success'] ?? "Se elimino la tarea");
+                $tipoMensaje = "success";
+            }
+        } else {
+            $mensaje = "Error: ID de tarea no válido.";
+            $tipoMensaje = "danger";
+        }
+    } elseif ($_POST['accion'] === 'eliminar') {
+        // Verificar que el ID de la tarea esté presente
+        if (isset($_POST['id']) && !empty($_POST['id'])) {
+            // Eliminar la tarea
+            $resultado = $tareaController->eliminarTarea($_POST['id']);
+
+            // Para AJAX, devolver JSON
+            if (
+                !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+                strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'
+            ) {
+                header('Content-Type: application/json');
+                echo json_encode($resultado);
+                exit;
+            }
+
+            // Para peticiones normales
+            if (isset($resultado['success'])) {
+                $mensaje = "Tarea eliminada exitosamente.";
+                $tipoMensaje = "success";
+            } else {
+                $mensaje = "Error: " . ($resultado['error'] ?? "No se pudo eliminar la tarea");
+                $tipoMensaje = "danger";
+            }
+        } else {
+            $resultado = ['error' => 'ID de tarea no válido.'];
+
+            // Para AJAX
+            if (
+                !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+                strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'
+            ) {
+                header('Content-Type: application/json');
+                echo json_encode($resultado);
+                exit;
+            }
+
+            $mensaje = "Error: ID de tarea no válido.";
+            $tipoMensaje = "danger";
+        }
     }
 }
 
@@ -57,7 +117,7 @@ $tareas = $tareaController->obtenerTareasAsignadasConEntregas($profesorId);
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php endif; ?>
-    
+
     <div class="row mb-4">
         <div class="col-lg-12">
             <div class="card shadow-sm border-0">
@@ -68,19 +128,19 @@ $tareas = $tareaController->obtenerTareasAsignadasConEntregas($profesorId);
                     <form method="post" id="formCrearTarea">
                         <input type="hidden" name="accion" value="crear">
                         <input type="hidden" name="profesor_id" value="<?= $profesorId ?>">
-                        
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="titulo" class="form-label">Título de la Tarea <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="titulo" name="titulo" required>
                             </div>
-                            
+
                             <div class="col-md-6 mb-3">
                                 <label for="fecha_entrega" class="form-label">Fecha de Entrega <span class="text-danger">*</span></label>
                                 <input type="datetime-local" class="form-control" id="fecha_entrega" name="fecha_entrega" required>
                             </div>
                         </div>
-                        
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="grupo_id" class="form-label">Grupo <span class="text-danger">*</span></label>
@@ -91,7 +151,7 @@ $tareas = $tareaController->obtenerTareasAsignadasConEntregas($profesorId);
                                     <?php endforeach; ?>
                                 </select>
                             </div>
-                            
+
                             <div class="col-md-6 mb-3">
                                 <label for="materia_id" class="form-label">Materia <span class="text-danger">*</span></label>
                                 <select class="form-select" id="materia_id" name="materia_id" required>
@@ -102,12 +162,12 @@ $tareas = $tareaController->obtenerTareasAsignadasConEntregas($profesorId);
                                 </select>
                             </div>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label for="descripcion" class="form-label">Descripción</label>
                             <textarea class="form-control" id="descripcion" name="descripcion" rows="3"></textarea>
                         </div>
-                        
+
                         <div class="text-end">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-plus-circle me-2"></i>Crear Tarea
@@ -118,7 +178,7 @@ $tareas = $tareaController->obtenerTareasAsignadasConEntregas($profesorId);
             </div>
         </div>
     </div>
-    
+
     <div class="row">
         <div class="col-lg-12">
             <div class="card shadow-sm border-0">
@@ -145,9 +205,9 @@ $tareas = $tareaController->obtenerTareasAsignadasConEntregas($profesorId);
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($tareas as $tarea): 
+                                    <?php foreach ($tareas as $tarea):
                                         // Determinar clase de badge según estado
-                                        $estadoClase = match($tarea['estado']) {
+                                        $estadoClase = match ($tarea['estado']) {
                                             'pendiente' => 'bg-warning',
                                             'completada' => 'bg-success',
                                             'calificada' => 'bg-info',
@@ -174,15 +234,15 @@ $tareas = $tareaController->obtenerTareasAsignadasConEntregas($profesorId);
                                                 <a href="<?= BASE_URL ?>?page=task_submissions&tarea_id=<?= $tarea['id'] ?>" class="btn btn-sm btn-info me-2">
                                                     <i class="fas fa-eye"></i> Ver entregas
                                                 </a>
-                                                <button type="button" class="btn btn-sm btn-warning" 
-                                                        data-bs-toggle="modal" 
-                                                        data-bs-target="#editTaskModal"
-                                                        data-id="<?= $tarea['id'] ?>"
-                                                        data-titulo="<?= htmlspecialchars($tarea['titulo']) ?>"
-                                                        data-descripcion="<?= htmlspecialchars($tarea['descripcion']) ?>"
-                                                        data-fecha_entrega="<?= date('Y-m-d\TH:i', strtotime($tarea['fecha_entrega'])) ?>"
-                                                        data-materia_id="<?= $tarea['materiaId'] ?>"
-                                                        data-grupo_id="<?= $tarea['grupoId'] ?>">
+                                                <button type="button" class="btn btn-sm btn-warning edit-task-btn"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#editTaskModal"
+                                                    data-id="<?= $tarea['id'] ?>"
+                                                    data-titulo="<?= htmlspecialchars($tarea['titulo']) ?>"
+                                                    data-descripcion="<?= htmlspecialchars($tarea['descripcion']) ?>"
+                                                    data-fecha_entrega="<?= date('Y-m-d\TH:i', strtotime($tarea['fecha_entrega'])) ?>"
+                                                    data-materia_id="<?= $tarea['materia_id'] ?? $tarea['materiaId'] ?? '' ?>"
+                                                    data-grupo_id="<?= $tarea['grupo_id'] ?? $tarea['grupoId'] ?? '' ?>">
                                                     <i class="fas fa-edit"></i> Editar
                                                 </button>
                                                 <button type="button" class="btn btn-sm btn-danger delete-task-btn" data-id="<?= $tarea['id'] ?>">
@@ -201,6 +261,7 @@ $tareas = $tareaController->obtenerTareasAsignadasConEntregas($profesorId);
     </div>
 </div>
 
+<!-- Modal de Edición -->
 <div class="modal fade" id="editTaskModal" tabindex="-1" aria-labelledby="editTaskModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -209,7 +270,7 @@ $tareas = $tareaController->obtenerTareasAsignadasConEntregas($profesorId);
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="formEditarTarea">
+                <form method="post" id="formEditarTarea">
                     <input type="hidden" name="accion" value="actualizar">
                     <input type="hidden" name="id" id="edit_tarea_id">
 
@@ -264,46 +325,62 @@ $tareas = $tareaController->obtenerTareasAsignadasConEntregas($profesorId);
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Establecer fecha mínima como hoy
-    const today = new Date();
-    const fechaEntregaInput = document.getElementById('fecha_entrega');
-    
-    // Formatear fecha para el input datetime-local (YYYY-MM-DDThh:mm)
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    const hours = String(today.getHours()).padStart(2, '0');
-    const minutes = String(today.getMinutes()).padStart(2, '0');
-    
-    const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}`;
-    fechaEntregaInput.min = formattedDate;
-    
-    // Validación del formulario
-    document.getElementById('formCrearTarea').addEventListener('submit', function(e) {
-        const titulo = document.getElementById('titulo').value.trim();
-        const fechaEntrega = document.getElementById('fecha_entrega').value;
-        const grupoId = document.getElementById('grupo_id').value;
-        const materiaId = document.getElementById('materia_id').value;
-        
-        if (!titulo || !fechaEntrega || !grupoId || !materiaId) {
-            e.preventDefault();
-            alert('Por favor, complete todos los campos requeridos.');
-        }
-    });
-});
+    document.addEventListener('DOMContentLoaded', function() {
+        // Establecer fecha mínima como hoy
+        const today = new Date();
+        const fechaEntregaInput = document.getElementById('fecha_entrega');
 
-// Lógica para el modal de edición de tareas
+        // Formatear fecha para el input datetime-local (YYYY-MM-DDThh:mm)
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const hours = String(today.getHours()).padStart(2, '0');
+        const minutes = String(today.getMinutes()).padStart(2, '0');
+
+        const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}`;
+        fechaEntregaInput.min = formattedDate;
+
+        // Validación del formulario de crear tarea
+        document.getElementById('formCrearTarea').addEventListener('submit', function(e) {
+            const titulo = document.getElementById('titulo').value.trim();
+            const fechaEntrega = document.getElementById('fecha_entrega').value;
+            const grupoId = document.getElementById('grupo_id').value;
+            const materiaId = document.getElementById('materia_id').value;
+
+            if (!titulo || !fechaEntrega || !grupoId || !materiaId) {
+                e.preventDefault();
+                alert('Por favor, complete todos los campos requeridos.');
+            }
+        });
+
+        // Validación del formulario de editar tarea
+        document.getElementById('formEditarTarea').addEventListener('submit', function(e) {
+            const titulo = document.getElementById('edit_titulo').value.trim();
+            const fechaEntrega = document.getElementById('edit_fecha_entrega').value;
+            const grupoId = document.getElementById('edit_grupo_id').value;
+            const materiaId = document.getElementById('edit_materia_id').value;
+
+            if (!titulo || !fechaEntrega || !grupoId || !materiaId) {
+                e.preventDefault();
+                alert('Por favor, complete todos los campos requeridos.');
+                return false;
+            }
+
+            return true;
+        });
+    });
+
+    // Lógica para el modal de edición de tareas
     const editTaskModal = document.getElementById('editTaskModal');
-    editTaskModal.addEventListener('show.bs.modal', function (event) {
+    editTaskModal.addEventListener('show.bs.modal', function(event) {
         // Botón que disparó el modal
-        const button = event.relatedTarget; 
+        const button = event.relatedTarget;
 
         // Extraer información de los atributos data-*
         const id = button.getAttribute('data-id');
         const titulo = button.getAttribute('data-titulo');
         const descripcion = button.getAttribute('data-descripcion');
-        const fechaEntrega = button.getAttribute('data-fecha_entrega'); // Ya viene en formato datetime-local
+        const fechaEntrega = button.getAttribute('data-fecha_entrega');
         const materiaId = button.getAttribute('data-materia_id');
         const grupoId = button.getAttribute('data-grupo_id');
 
@@ -321,36 +398,9 @@ document.addEventListener('DOMContentLoaded', function() {
         inputId.value = id;
         inputTitulo.value = titulo;
         inputDescripcion.value = descripcion;
-        inputFechaEntrega.value = fechaEntrega; 
+        inputFechaEntrega.value = fechaEntrega;
         selectMateria.value = materiaId;
         selectGrupo.value = grupoId;
-    });
-
-    // Manejar el envío del formulario de edición via AJAX
-    document.getElementById('formEditarTarea').addEventListener('submit', function(e) {
-        e.preventDefault(); // Evitar el envío normal del formulario
-
-        const formData = new FormData(this); // Obtener datos del formulario
-
-        fetch('<?= BASE_URL ?>app/controllers/GestionTareaController.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Mostrar mensaje de éxito y recargar la página o actualizar la tabla
-                alert(data.success);
-                location.reload(); // Recargar para ver los cambios
-            } else {
-                // Mostrar mensaje de error
-                alert('Error: ' + data.error);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Ocurrió un error al procesar la solicitud.');
-        });
     });
 
     // Manejar la eliminación de tareas
@@ -363,28 +413,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 formData.append('accion', 'eliminar');
                 formData.append('id', tareaId);
 
-                fetch('<?= BASE_URL ?>app/controllers/GestionTareaController.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(data.success);
-                        location.reload(); // Recargar para ver los cambios
-                    } else {
-                        alert('Error: ' + data.error);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Ocurrió un error al procesar la solicitud.');
-                });
+                fetch(window.location.href, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => {
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && contentType.indexOf('application/json') !== -1) {
+                            return response.json();
+                        } else {
+                            // Si no es JSON, recargar la página
+                            location.reload();
+                            throw new Error('Respuesta no JSON esperada, recargando página.');
+                        }
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.success);
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        if (error.message !== 'Respuesta no JSON esperada, recargando página.') {
+                            alert('Ocurrió un error al procesar la solicitud.');
+                        }
+                    });
             }
         });
     });
-</script>            
-        </style>
-    </body>
-
-</html>
+</script>
