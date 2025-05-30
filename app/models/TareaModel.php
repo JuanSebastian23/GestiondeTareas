@@ -17,6 +17,90 @@ class TareaModel {
     }
 
     /**
+     * Elimina una tarea por su ID.
+     *
+     * @param int $tareaId El ID de la tarea a eliminar.
+     * @return bool True si la eliminación fue exitosa, false en caso contrario.
+     */
+    public function eliminarTarea($tareaId) {
+        try {
+            // Antes de eliminar la tarea, debemos eliminar las entregas asociadas
+            $sqlDeleteEntregas = "DELETE FROM entregas_tarea WHERE tarea_id = ?";
+            $stmtDeleteEntregas = $this->conn->prepare($sqlDeleteEntregas);
+            if (!$stmtDeleteEntregas) {
+                throw new Exception("Error preparando consulta para eliminar entregas: " . $this->conn->error);
+            }
+            $stmtDeleteEntregas->bind_param("i", $tareaId);
+            $stmtDeleteEntregas->execute();
+
+            // También eliminar notificaciones relacionadas con esta tarea
+            $sqlDeleteNotificaciones = "DELETE FROM notificaciones WHERE tarea_id = ?";
+            $stmtDeleteNotificaciones = $this->conn->prepare($sqlDeleteNotificaciones);
+            if (!$stmtDeleteNotificaciones) {
+                throw new Exception("Error preparando consulta para eliminar notificaciones: " . $this->conn->error);
+            }
+            $stmtDeleteNotificaciones->bind_param("i", $tareaId);
+            $stmtDeleteNotificaciones->execute();
+
+            // Ahora eliminar la tarea
+            $sql = "DELETE FROM tareas WHERE id = ?";
+            $stmt = $this->conn->prepare($sql);
+            if (!$stmt) {
+                throw new Exception("Error en la consulta SQL para eliminar tarea: " . $this->conn->error);
+            }
+            
+            $stmt->bind_param("i", $tareaId);
+            
+            if ($stmt->execute()) {
+                return $stmt->affected_rows > 0; // Retorna true si se afectó al menos una fila (la tarea fue eliminada)
+            } else {
+                error_log("Error al ejecutar la eliminación de tarea: " . $stmt->error);
+                return false;
+            }
+        } catch (Exception $e) {
+            error_log("Excepción en eliminarTarea: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Actualiza los datos de una tarea existente.
+     *
+     * @param int $tareaId El ID de la tarea a actualizar.
+     * @param string $titulo Nuevo título de la tarea.
+     * @param string $descripcion Nueva descripción de la tarea.
+     * @param string $fechaEntrega Nueva fecha de entrega de la tarea (formato YYYY-MM-DD HH:MM:SS).
+     * @param int $materiaId Nuevo ID de la materia.
+     * @param int $grupoId Nuevo ID del grupo.
+     * @return bool True si la actualización fue exitosa, false en caso contrario.
+     */
+    public function actualizarTarea($tareaId, $titulo, $descripcion, $fechaEntrega, $materiaId, $grupoId) {
+        try {
+            $sql = "UPDATE tareas 
+                    SET titulo = ?, descripcion = ?, fecha_entrega = ?, materia_id = ?, grupo_id = ? 
+                    WHERE id = ?";
+            
+            $stmt = $this->conn->prepare($sql);
+            if (!$stmt) {
+                throw new Exception("Error en la consulta SQL para actualizar tarea: " . $this->conn->error);
+            }
+            
+            // Los tipos de datos deben coincidir con los de la base de datos: (string, string, string, int, int, int)
+            $stmt->bind_param("sssiii", $titulo, $descripcion, $fechaEntrega, $materiaId, $grupoId, $tareaId);
+            
+            if ($stmt->execute()) {
+                return $stmt->affected_rows > 0; // Retorna true si se afectó al menos una fila (la tarea fue actualizada)
+            } else {
+                error_log("Error al ejecutar la actualización de tarea: " . $stmt->error);
+                return false;
+            }
+        } catch (Exception $e) {
+            error_log("Excepción en actualizarTarea: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Inserta una nueva tarea y devuelve su ID
      * @return int|bool ID de la tarea insertada o false en caso de error
      */

@@ -49,6 +49,69 @@ class TareaController {
     }
 
     /**
+     * Procesa la eliminación de una tarea.
+     *
+     * @param int $tareaId El ID de la tarea a eliminar.
+     * @return array Un array con 'success' o 'error' y un mensaje.
+     */
+    public function eliminarTarea($tareaId) {
+        if (empty($tareaId)) {
+            return ['error' => 'ID de tarea no proporcionado para eliminar.'];
+        }
+
+        try {
+            $resultado = $this->model->eliminarTarea($tareaId);
+
+            if ($resultado) {
+                return ['success' => 'Tarea eliminada exitosamente'];
+            } else {
+                return ['error' => 'No se pudo eliminar la tarea o la tarea no existe.'];
+            }
+        } catch (Exception $e) {
+            error_log("Excepción al eliminar tarea: " . $e->getMessage());
+            return ['error' => 'Error al eliminar la tarea: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Procesa la actualización de una tarea.
+     *
+     * @param array $datos Array asociativo con los datos de la tarea a actualizar, incluyendo 'id'.
+     * @return array Un array con 'success' o 'error' y un mensaje.
+     */
+    public function actualizarTarea($datos) {
+        // Validar datos
+        if (empty($datos['id']) || empty($datos['titulo']) || empty($datos['fecha_entrega']) || 
+            empty($datos['materia_id']) || empty($datos['grupo_id'])) {
+            
+            error_log("Datos incompletos para actualizar tarea: " . print_r($datos, true));
+            return ['error' => 'Todos los campos obligatorios (título, fecha de entrega, materia, grupo) deben ser completados.'];
+        }
+
+        try {
+            $tareaId = $datos['id'];
+            $titulo = $datos['titulo'];
+            $descripcion = $datos['descripcion'] ?? '';
+            $fechaEntrega = $datos['fecha_entrega'];
+            $materiaId = $datos['materia_id'];
+            $grupoId = $datos['grupo_id'];
+
+            $resultado = $this->model->actualizarTarea(
+                $tareaId, $titulo, $descripcion, $fechaEntrega, $materiaId, $grupoId
+            );
+
+            if ($resultado) {
+                return ['success' => 'Tarea actualizada exitosamente'];
+            } else {
+                return ['error' => 'No se pudo actualizar la tarea o no hubo cambios.'];
+            }
+        } catch (Exception $e) {
+            error_log("Excepción al actualizar tarea: " . $e->getMessage());
+            return ['error' => 'Error al actualizar la tarea: ' . $e->getMessage()];
+        }
+    }
+
+    /**
      * Obtiene las tareas asignadas a un profesor con información de entregas
      * 
      * @param int $profesorId ID del profesor
