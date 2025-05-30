@@ -171,9 +171,23 @@ $tareas = $tareaController->obtenerTareasAsignadasConEntregas($profesorId);
                                                 </span>
                                             </td>
                                             <td>
-                                                <a href="<?= BASE_URL ?>?page=task_submissions&tarea_id=<?= $tarea['id'] ?>" class="btn btn-sm btn-primary">
+                                                <a href="<?= BASE_URL ?>?page=task_submissions&tarea_id=<?= $tarea['id'] ?>" class="btn btn-sm btn-info me-2">
                                                     <i class="fas fa-eye"></i> Ver entregas
                                                 </a>
+                                                <button type="button" class="btn btn-sm btn-warning" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#editTaskModal"
+                                                        data-id="<?= $tarea['id'] ?>"
+                                                        data-titulo="<?= htmlspecialchars($tarea['titulo']) ?>"
+                                                        data-descripcion="<?= htmlspecialchars($tarea['descripcion']) ?>"
+                                                        data-fecha_entrega="<?= date('Y-m-d\TH:i', strtotime($tarea['fecha_entrega'])) ?>"
+                                                        data-materia_id="<?= $tarea['materiaId'] ?>"
+                                                        data-grupo_id="<?= $tarea['grupoId'] ?>">
+                                                    <i class="fas fa-edit"></i> Editar
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-danger delete-task-btn" data-id="<?= $tarea['id'] ?>">
+                                                    <i class="fas fa-trash"></i> Eliminar
+                                                </button>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -182,6 +196,68 @@ $tareas = $tareaController->obtenerTareasAsignadasConEntregas($profesorId);
                         </div>
                     <?php endif; ?>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editTaskModal" tabindex="-1" aria-labelledby="editTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title" id="editTaskModalLabel">Editar Tarea</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formEditarTarea">
+                    <input type="hidden" name="accion" value="actualizar">
+                    <input type="hidden" name="id" id="edit_tarea_id">
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_titulo" class="form-label">Título de la Tarea <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="edit_titulo" name="titulo" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_fecha_entrega" class="form-label">Fecha de Entrega <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" id="edit_fecha_entrega" name="fecha_entrega" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_grupo_id" class="form-label">Grupo <span class="text-danger">*</span></label>
+                            <select class="form-select" id="edit_grupo_id" name="grupo_id" required>
+                                <option value="">Seleccione un grupo</option>
+                                <?php foreach ($grupos as $grupo): ?>
+                                    <option value="<?= $grupo['id'] ?>"><?= htmlspecialchars($grupo['nombre']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_materia_id" class="form-label">Materia <span class="text-danger">*</span></label>
+                            <select class="form-select" id="edit_materia_id" name="materia_id" required>
+                                <option value="">Seleccione una materia</option>
+                                <?php foreach ($materias as $materia): ?>
+                                    <option value="<?= $materia['id'] ?>"><?= htmlspecialchars($materia['nombre']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="edit_descripcion" name="descripcion" rows="3"></textarea>
+                    </div>
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-save me-2"></i>Guardar Cambios
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -216,7 +292,98 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-</script>            }
+
+// Lógica para el modal de edición de tareas
+    const editTaskModal = document.getElementById('editTaskModal');
+    editTaskModal.addEventListener('show.bs.modal', function (event) {
+        // Botón que disparó el modal
+        const button = event.relatedTarget; 
+
+        // Extraer información de los atributos data-*
+        const id = button.getAttribute('data-id');
+        const titulo = button.getAttribute('data-titulo');
+        const descripcion = button.getAttribute('data-descripcion');
+        const fechaEntrega = button.getAttribute('data-fecha_entrega'); // Ya viene en formato datetime-local
+        const materiaId = button.getAttribute('data-materia_id');
+        const grupoId = button.getAttribute('data-grupo_id');
+
+        // Actualizar los campos del formulario del modal
+        const modalTitle = editTaskModal.querySelector('.modal-title');
+        const form = editTaskModal.querySelector('#formEditarTarea');
+        const inputId = form.querySelector('#edit_tarea_id');
+        const inputTitulo = form.querySelector('#edit_titulo');
+        const inputDescripcion = form.querySelector('#edit_descripcion');
+        const inputFechaEntrega = form.querySelector('#edit_fecha_entrega');
+        const selectMateria = form.querySelector('#edit_materia_id');
+        const selectGrupo = form.querySelector('#edit_grupo_id');
+
+        modalTitle.textContent = `Editar Tarea: ${titulo}`;
+        inputId.value = id;
+        inputTitulo.value = titulo;
+        inputDescripcion.value = descripcion;
+        inputFechaEntrega.value = fechaEntrega; 
+        selectMateria.value = materiaId;
+        selectGrupo.value = grupoId;
+    });
+
+    // Manejar el envío del formulario de edición via AJAX
+    document.getElementById('formEditarTarea').addEventListener('submit', function(e) {
+        e.preventDefault(); // Evitar el envío normal del formulario
+
+        const formData = new FormData(this); // Obtener datos del formulario
+
+        fetch('<?= BASE_URL ?>app/controllers/GestionTareaController.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Mostrar mensaje de éxito y recargar la página o actualizar la tabla
+                alert(data.success);
+                location.reload(); // Recargar para ver los cambios
+            } else {
+                // Mostrar mensaje de error
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ocurrió un error al procesar la solicitud.');
+        });
+    });
+
+    // Manejar la eliminación de tareas
+    document.querySelectorAll('.delete-task-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const tareaId = this.getAttribute('data-id');
+
+            if (confirm('¿Está seguro de que desea eliminar esta tarea? Esta acción es irreversible y eliminará también las entregas asociadas.')) {
+                const formData = new FormData();
+                formData.append('accion', 'eliminar');
+                formData.append('id', tareaId);
+
+                fetch('<?= BASE_URL ?>app/controllers/GestionTareaController.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.success);
+                        location.reload(); // Recargar para ver los cambios
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Ocurrió un error al procesar la solicitud.');
+                });
+            }
+        });
+    });
+</script>            
         </style>
     </body>
 

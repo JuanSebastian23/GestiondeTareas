@@ -83,36 +83,49 @@ function editUser(user) {
  * @param {boolean} activate - True para activar, False para desactivar
  */
 function toggleActivation(userId, activate) {
-    // Preguntar confirmación
     const action = activate ? 'activar' : 'desactivar';
-    const message = `¿Está seguro que desea ${action} este usuario?`;
-    
+    const message = `¿Está seguro de que desea ${action} este usuario?`;
+
+    // Usar SweetAlert2 para la confirmación
     confirmAction('Confirmar acción', message, 'warning').then((result) => {
         if (result.isConfirmed) {
-            // Crear un formulario y enviarlo
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.style.display = 'none';
-            
-            // Agregar los campos necesarios
-            const fields = {
-                'accion': 'cambiarEstado',
-                'id': userId,
-                'activo': activate ? 1 : 0
-            };
-            
-            // Crear campos y agregarlos al formulario
-            Object.keys(fields).forEach(key => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = key;
-                input.value = fields[key];
-                form.appendChild(input);
+            const formData = new FormData();
+            formData.append('accion', activate ? 'activar' : 'eliminar'); // 'eliminar' es la acción para desactivar
+            formData.append('id', userId);
+
+            fetch('<?= BASE_URL ?>app/controllers/UsuarioController.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.indexOf('application/json') !== -1) {
+                    return response.json();
+                } else {
+                    // Si no es JSON, puede ser una redirección o un error de PHP no-JSON
+                    // Recargar la página y manejar el mensaje a través de sessionStorage
+                    location.reload();
+                    throw new Error('Respuesta no JSON esperada, recargando página.');
+                }
+            })
+            .then(data => {
+                if (data.success) {
+                    showAlert('Éxito', data.success, 'success');
+                    // Recargar la página después de mostrar la alerta de SweetAlert2
+                    // para que los cambios se reflejen en la tabla
+                    setTimeout(() => { // Pequeño retraso para que el usuario vea la alerta
+                        location.reload();
+                    }, 1500); 
+                } else {
+                    showAlert('Error', data.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error en fetch:', error);
+                if (error.message !== 'Respuesta no JSON esperada, recargando página.') {
+                    showAlert('Error', 'Ocurrió un error al procesar la solicitud.', 'error');
+                }
             });
-            
-            // Agregar el formulario al documento y enviarlo
-            document.body.appendChild(form);
-            form.submit();
         }
     });
 }
