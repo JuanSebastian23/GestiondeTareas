@@ -52,10 +52,39 @@ class GestionTareaController {
             case 'cambiarEstado':
                 $resultado = $this->cambiarEstadoTarea($_POST);
                 break;
+            case 'actualizar':
+                $resultado = $this->actualizarTarea($_POST);
+                break;
+            case 'eliminar':
+                $resultado = $this->eliminarTarea($_POST['id'] ?? null); // Pasar el ID de la tarea
+                break;
             // Puedes añadir más casos según sea necesario
         }
         
         return $resultado;
+    }
+
+    /**
+     * Elimina una tarea existente
+     */
+    private function eliminarTarea($tareaId) {
+        if (!isset($_SESSION['user_id'])) {
+            return ['error' => 'Usuario no autenticado'];
+        }
+        
+        return $this->tareaController->eliminarTarea($tareaId);
+    }
+
+    /**
+     * Actualiza una tarea existente
+     */
+    private function actualizarTarea($datos) {
+        if (!isset($_SESSION['user_id'])) {
+            return ['error' => 'Usuario no autenticado'];
+        }
+        
+        // No es necesario añadir profesor_id aquí, ya que el método de TareaController lo recibe directamente
+        return $this->tareaController->actualizarTarea($datos);
     }
     
     /**
